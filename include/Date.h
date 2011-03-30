@@ -1,10 +1,12 @@
 #ifndef _INCLUDE_DATE_H_
 #define _INCLUDE_DATE_H_
 
+#include <string>
+
 class Date
 {
     public:
-        Date();
+        Date(std::string& str);
         ~Date();
 
         static Date* today();
@@ -20,7 +22,7 @@ class ACT365:
     public Date
 {
     public:
-        ACT365();
+        ACT365(std::string& str);
         ~ACT365();
 
         virtual Date* nWorkdaysAfter(int days) const;
@@ -34,7 +36,7 @@ class ACT365J:
     public Date
 {
     public:
-        ACT365J();
+        ACT365J(std::string& str);
         ~ACT365J();
 
         virtual Date* nWorkdaysAfter(int days) const;
@@ -43,4 +45,6 @@ class ACT365J:
 
         virtual int operator-(Date& rhs) const;
 };
+
+//typedef ACT365 CurrDateType;
 #endif // _INCLUDE_DATE_H_ 

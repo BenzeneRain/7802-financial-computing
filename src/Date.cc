@@ -3,7 +3,7 @@
 /////////////////////////////////////////
 // Definition of the interface class Date
 //////////////////////////////////////////
-Date::Date()
+Date::Date(std::string& str)
 {
 }
 
@@ -14,7 +14,8 @@ Date::~Date()
 /////////////////////////////////////////
 // Definition of the class ACT365
 //////////////////////////////////////////
-ACT365::ACT365()
+ACT365::ACT365(std::string& str):
+    Date(str)
 {
 }
 
@@ -45,7 +46,8 @@ int ACT365::operator-(Date& rhs) const
 /////////////////////////////////////////
 // Definition of the class ACT365J
 //////////////////////////////////////////
-ACT365J::ACT365J()
+ACT365J::ACT365J(std::string& str):
+    Date(str)
 {
 }
 

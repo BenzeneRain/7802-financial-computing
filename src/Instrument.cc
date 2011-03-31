@@ -1,7 +1,3 @@
-#include <algorithm>
-#include <iostream>
-#include <sstream>
-
 #include <boost/algorithm/string.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
@@ -12,8 +8,8 @@
 //////////////////////////////////////////
 // Definition of Instrument class
 //////////////////////////////////////////
-Instrument::Instrument(Date& date, int index):
-    _date(date), _index(index)
+Instrument::Instrument(std::string maturity, int index):
+    _maturity(maturity), _index(index)
 {
 }
 
@@ -23,8 +19,6 @@ Instrument::~Instrument()
 
 Instrument* Instrument::parseString(std::string& instrDefStr)
 {
-    std::istringstream iss(instrDefStr);
-
     try
     {
         std::string instrumentType;
@@ -44,25 +38,31 @@ Instrument* Instrument::parseString(std::string& instrDefStr)
         tokIter ++;
         id = boost::lexical_cast<int>(*tokIter);
 
-        ACT365 actDate(dateStr);
-        Date& date = actDate;
-
         if(boost::iequals(instrumentType, std::string("CASH")))
         {
             // InstrumentType is CASH
-            Instrument *instr = new CASHInstr(date, id);
+            Instrument *instr = new CASHInstr(dateStr, id);
             return instr;
         }
         else if(boost::iequals(instrumentType, std::string("FRA")))
         {
             // InstrumentType is FRA
-            Instrument *instr = new FRAInstr(date, id);
+            boost::char_separator<char> FRADateSep("xX");
+            tokenizer FRADateTokens(dateStr, FRADateSep);
+
+            tokIter = FRADateTokens.begin();
+            std::string startDuration = *tokIter;
+
+            tokIter ++;
+            std::string maturity = *tokIter;
+            
+            Instrument *instr = new FRAInstr(startDuration, maturity, id);
             return instr;
         }
         else if(boost::iequals(instrumentType, std::string("SWAP")))
         {
             // InstrumentType is SWAP
-            Instrument *instr = new SWAPInstr(date, id);
+            Instrument *instr = new SWAPInstr(dateStr, id);
             return instr;
         }
         else
@@ -82,8 +82,8 @@ Instrument* Instrument::parseString(std::string& instrDefStr)
 //////////////////////////////////////////
 // Definition of CASHInstr class
 //////////////////////////////////////////
-CASHInstr::CASHInstr(Date& date, int index):
-    Instrument(date, index)
+CASHInstr::CASHInstr(std::string& maturity, int index):
+    Instrument(maturity, index)
 {
 }
 
@@ -91,11 +91,15 @@ CASHInstr::~CASHInstr()
 {
 }
 
+std::string CASHInstr::subtype() const
+{
+}
 //////////////////////////////////////////
 // Definition of FRAInstr class
 //////////////////////////////////////////
-FRAInstr::FRAInstr(Date& date, int index):
-    Instrument(date, index)
+FRAInstr::FRAInstr(std::string& startDuration,
+        std::string& maturity, int index):
+    _startDuration(startDuration), Instrument(maturity, index)
 {
 }
 
@@ -103,15 +107,23 @@ FRAInstr::~FRAInstr()
 {
 }
 
+std::string FRAInstr::subtype() const
+{
+}
+
 //////////////////////////////////////////
 // Definition of SWAPInstr class
 //////////////////////////////////////////
-SWAPInstr::SWAPInstr(Date& date, int index):
-    Instrument(date, index)
+SWAPInstr::SWAPInstr(std::string& maturity, int index):
+    Instrument(maturity, index)
 {
 }
 
 SWAPInstr::~SWAPInstr()
+{
+}
+
+std::string SWAPInstr::subtype() const
 {
 }
 

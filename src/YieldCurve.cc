@@ -61,6 +61,10 @@ ZeroCouponRateCurve::~ZeroCouponRateCurve()
 {
 }
 
+void ZeroCouponRateCurve::updateCurve()
+{
+}
+
 //////////////////////////////////////////
 // Definition of the class DiscountFactorCurve
 //////////////////////////////////////////
@@ -70,5 +74,9 @@ DiscountFactorCurve::DiscountFactorCurve(std::vector<Instrument>& inputInstrumen
 }
 
 DiscountFactorCurve::~DiscountFactorCurve()
+{
+}
+
+void DiscountFactorCurve::updateCurve()
 {
 }

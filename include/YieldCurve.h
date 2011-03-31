@@ -58,6 +58,7 @@ class DiscountFactorCurve:
         DiscountFactorCurve(std::vector<Instrument>& inputInstruments);
         ~DiscountFactorCurve();
 
+        virtual void updateCurve();
     private:
         std::vector<PointOnDiscountFactorCurve> _points;
 };
@@ -70,6 +71,7 @@ class ZeroCouponRateCurve:
                 DiscountFactorCurve& discountFactorCurve);
         ~ZeroCouponRateCurve();
 
+        virtual void updateCurve();
     private:
         DiscountFactorCurve& _discountFactorCurve;
         std::vector<PointOnZeroCouponRateCurve> _points;

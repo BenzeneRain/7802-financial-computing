@@ -19,29 +19,35 @@ class Instrument
         inline double rate() const {return _compIntRate;} 
 
         inline int index() const {return _index;}
-        inline const Date& date() const {return _date;}
+        virtual std::string subtype() const = 0;
     protected:
-        Instrument(Date& date, int index);
+        Instrument(std::string maturity, int index);
 
         double _compIntRate;
         int _index;
-        Date& _date;
+        std::string  _maturity;
 };
 
 class CASHInstr:
     public Instrument
 {
     public:
-        CASHInstr(Date& date, int index);
+        CASHInstr(std::string& maturity, int index);
         ~CASHInstr();
+
+        virtual std::string subtype() const;
 };
 
 class FRAInstr:
     public Instrument
 {
     public:
-        FRAInstr(Date& date, int index);
+        FRAInstr(std::string& startDuration, std::string& maturity, int index);
         ~FRAInstr();
+
+        virtual std::string subtype() const;
+    protected:
+        std::string _startDuration;
 };
 
 class SWAPInstr:
@@ -49,8 +55,10 @@ class SWAPInstr:
 
 {
     public:
-        SWAPInstr(Date& date, int index);
+        SWAPInstr(std::string& maturity, int index);
         ~SWAPInstr();
+
+        virtual std::string subtype() const;
 };
 
 

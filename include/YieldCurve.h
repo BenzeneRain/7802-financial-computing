@@ -2,81 +2,59 @@
 #define _INCLUDE_YIELDCURVE_H_
 
 #include <vector>
+#include <map>
+#include <utility>
 
 class Date; // Forward Declaration of Date class in "Date.h"
-class Instrument; // Forward Declaration of Instrument class in "Instrument.h"
-
-class PointOnCurve
-{
-    public:
-        PointOnCurve(Date& date, double value);
-        ~PointOnCurve();
-
-    private:
-        Date& _date;
-        int _time; // time since today in terms of days
-        double _value;
-};
-
-
-class PointOnZeroCouponRateCurve:
-    public PointOnCurve
-{
-    public:
-        PointOnZeroCouponRateCurve(Date& date, double value);
-        ~PointOnZeroCouponRateCurve();
-};
-
-class PointOnDiscountFactorCurve:
-    public PointOnCurve
-{
-    public:
-        PointOnDiscountFactorCurve(Date& date, double value);
-        ~PointOnDiscountFactorCurve();
-};
+class InstrumentDefinition; // Forward Declaration of InstrumentDefinition class in "Instrument.h"
+class InstrumentValues; // Forwaed Declaration of InstrumentValues class in "Instrument.h"
 
 class YieldCurve
 {
     public:
-        explicit YieldCurve(std::vector<Instrument>& inputInstruments);
+        explicit YieldCurve(std::vector<InstrumentDefinition *>& instrDefs);
         ~YieldCurve();
 
+        // Section about Instrument Definitions
+
+        // Section about Instrument Values
+        InstrumentValues* bindData(InstrumentValues *instrVals);
+
+        // Section about Curve Data
         virtual void updateCurve() = 0;
-        virtual PointOnCurve operator[](int daysAfter) = 0;
-        virtual PointOnCurve operator[](Date& date) = 0;
-
-        
-    private:
-        std::vector<Instrument>& _inputInstruments;
-        bool _autoUpdateCurve;
-};
-
-class DiscountFactorCurve:
-    public YieldCurve
-{
-    public:
-        DiscountFactorCurve(std::vector<Instrument>& inputInstruments);
-        ~DiscountFactorCurve();
-
-        virtual void updateCurve();
-    private:
-        std::vector<PointOnDiscountFactorCurve> _points;
+        virtual std::pair<Date, double> operator[](std::string dateStr);
+        virtual std::pair<Date, double> operator[](Date& date);
+    protected:
+        std::map<int, InstrumentDefinition *> _instrDefs;
+        InstrumentValues* _instrValues;
 };
 
 class ZeroCouponRateCurve:
     public YieldCurve
 {
     public:
-        ZeroCouponRateCurve(std::vector<Instrument>& inputInstruments,
-                DiscountFactorCurve& discountFactorCurve);
+        ZeroCouponRateCurve(std::vector<InstrumentDefinition *>& instrDefs);
         ~ZeroCouponRateCurve();
 
+        // Section about Instrument Definitions
+
+        // Section about Instrument Values
+
+        // Section about Curve Data
         virtual void updateCurve();
-    private:
-        DiscountFactorCurve& _discountFactorCurve;
-        std::vector<PointOnZeroCouponRateCurve> _points;
 };
 
+class YieldCurveException
+{
+    public:
+        YieldCurveException(std::string& message):
+            _message(message){};
+        ~YieldCurveException();
 
+        inline std::string message() const
+        {return _message;}
+    private:
+        std::string _message;
+};
 
 #endif //_INCLUDE_YIELDCURVE_H_

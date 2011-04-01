@@ -1,59 +1,63 @@
+#include <sstream>
+#include <string>
+
 #include "YieldCurve.h"
+#include "Instrument.h"
 
-//////////////////////////////////////////
-// Definition of the class PointOnCurve
-//////////////////////////////////////////
-PointOnCurve::PointOnCurve(Date& date, double value):
-    _date(date), _value(value)
-{
-}
-
-PointOnCurve::~PointOnCurve()
-{
-}
-
-//////////////////////////////////////////
-// Definition of the class PointOnZeroCouponRateCurve
-//////////////////////////////////////////
-PointOnZeroCouponRateCurve::PointOnZeroCouponRateCurve(Date& date, double value):
-    PointOnCurve(date, value)
-{
-}
-
-PointOnZeroCouponRateCurve::~PointOnZeroCouponRateCurve()
-{
-}
-
-//////////////////////////////////////////
-// Definition of the class PointOnDiscountFactorCurve
-//////////////////////////////////////////
-PointOnDiscountFactorCurve::PointOnDiscountFactorCurve(Date& date, double value):
-    PointOnCurve(date, value)
-{
-}
-
-PointOnDiscountFactorCurve::~PointOnDiscountFactorCurve()
-{
-}
 
 //////////////////////////////////////////
 // Definition of the class YieldCurve
 //////////////////////////////////////////
-YieldCurve::YieldCurve(std::vector<Instrument>& inputInstruments):
-    _inputInstruments(inputInstruments)
+YieldCurve::YieldCurve(std::vector<InstrumentDefinition *>& instrDefs)
 {
+    _instrValues = NULL;
+
+    // Prepare mapping between Instrument indices and their definitions
+    std::map<int, InstrumentDefinition *>().swap(_instrDefs);
+    
+
+    // FIX: Be careful stack overflow
+    for(std::vector<InstrumentDefinition *>::iterator iter = instrDefs.begin();
+            iter != instrDefs.end(); iter ++)
+    {
+        InstrumentDefinition* ptrInstrDef =
+            static_cast<InstrumentDefinition *>(*iter);
+        
+        int index = ptrInstrDef->index(); 
+        _instrDefs[index] = ptrInstrDef;
+    }
 }
 
 YieldCurve::~YieldCurve()
 {
 }
 
+InstrumentValues* YieldCurve::bindData(InstrumentValues *instrVals)
+{
+    // Sanity check for the new values
+    for(std::vector<std::pair<int, double> >::iterator iter = instrVals->values.begin();
+            iter != instrVals->values.end(); iter ++)
+    {
+        std::pair<int, double>& val = *iter;
+        if(_instrDefs.find(val.first) == _instrDefs.end())
+        {
+            std::ostringstream oss;
+            oss << "Invalid instrument data index " << val.first;
+            std::string message = oss.str();
+            throw YieldCurveException(message);
+        }
+    }
+
+    InstrumentValues* prevInstrValues = _instrValues;
+    _instrValues = instrVals;
+    return prevInstrValues;
+}
+
 //////////////////////////////////////////
 // Definition of the class ZeroCouponRateCurve
 //////////////////////////////////////////
-ZeroCouponRateCurve::ZeroCouponRateCurve(std::vector<Instrument>& inputInstruments,
-        DiscountFactorCurve& discountFactorCurve):
-    _discountFactorCurve(discountFactorCurve), YieldCurve(inputInstruments)
+ZeroCouponRateCurve::ZeroCouponRateCurve(std::vector<InstrumentDefinition *>& instrDefs):
+    YieldCurve(instrDefs)
 {
 }
 
@@ -65,18 +69,9 @@ void ZeroCouponRateCurve::updateCurve()
 {
 }
 
-//////////////////////////////////////////
-// Definition of the class DiscountFactorCurve
-//////////////////////////////////////////
-DiscountFactorCurve::DiscountFactorCurve(std::vector<Instrument>& inputInstruments):
-    YieldCurve(inputInstruments)
-{
-}
-
-DiscountFactorCurve::~DiscountFactorCurve()
-{
-}
-
-void DiscountFactorCurve::updateCurve()
+////////////////////////////////////////////
+//// Definition of the class YieldCurveException
+////////////////////////////////////////////
+YieldCurveException::~YieldCurveException()
 {
 }

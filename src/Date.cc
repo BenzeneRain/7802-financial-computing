@@ -3,7 +3,8 @@
 /////////////////////////////////////////
 // Definition of the interface class Date
 //////////////////////////////////////////
-Date::Date(std::string& str)
+Date::Date(std::string& str, enum DATETYPE type):
+    _type(type)
 {
 }
 
@@ -11,66 +12,26 @@ Date::~Date()
 {
 }
 
-/////////////////////////////////////////
-// Definition of the class ACT365
-//////////////////////////////////////////
-ACT365::ACT365(std::string& str):
-    Date(str)
+Date& Date::today(Date::DATETYPE type)
 {
 }
 
-ACT365::~ACT365()
+Date Date::nWorkdaysAfter(int days) const
 {
 }
 
-Date* ACT365::nWorkdaysBefore(int days) const
-{
-    return static_cast<Date *>(0);
-}
-
-Date* ACT365::nWorkdaysAfter(int days) const
-{
-    return static_cast<Date *>(0);
-}
-
-bool ACT365::isWorkday(Date& date) const
-{
-    return true;
-}
-
-int ACT365::operator-(Date& rhs) const
-{
-    return 0;
-}
-
-/////////////////////////////////////////
-// Definition of the class ACT365J
-//////////////////////////////////////////
-ACT365J::ACT365J(std::string& str):
-    Date(str)
+Date Date::nWorkdaysBefore(int days) const
 {
 }
 
-ACT365J::~ACT365J()
+bool Date::isWorkday(Date& date) const
 {
 }
 
-Date* ACT365J::nWorkdaysBefore(int days) const
+int Date::operator-(Date& rhs) const
 {
-    return static_cast<Date *>(0);
 }
 
-Date* ACT365J::nWorkdaysAfter(int days) const
+Date& Date::operator+(std::string& durationStr) const
 {
-    return static_cast<Date *>(0);
-}
-
-bool ACT365J::isWorkday(Date& date) const
-{
-    return true;
-}
-
-int ACT365J::operator-(Date& rhs) const
-{
-    return 0;
 }

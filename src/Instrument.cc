@@ -6,18 +6,18 @@
 #include "Date.h"
 
 //////////////////////////////////////////
-// Definition of Instrument class
+// Definition of InstrumentDefinition class
 //////////////////////////////////////////
-Instrument::Instrument(std::string maturity, int index):
+InstrumentDefinition::InstrumentDefinition(std::string maturity, int index):
     _maturity(maturity), _index(index)
 {
 }
 
-Instrument::~Instrument()
+InstrumentDefinition::~InstrumentDefinition()
 {
 }
 
-Instrument* Instrument::parseString(std::string& instrDefStr)
+InstrumentDefinition* InstrumentDefinition::parseString(std::string& instrDefStr)
 {
     try
     {
@@ -40,13 +40,13 @@ Instrument* Instrument::parseString(std::string& instrDefStr)
 
         if(boost::iequals(instrumentType, std::string("CASH")))
         {
-            // InstrumentType is CASH
-            Instrument *instr = new CASHInstr(dateStr, id);
+            // InstrumentDefinitionType is CASH
+            InstrumentDefinition *instr = new CASHInstrDefinition(dateStr, id);
             return instr;
         }
         else if(boost::iequals(instrumentType, std::string("FRA")))
         {
-            // InstrumentType is FRA
+            // InstrumentDefinitionType is FRA
             boost::char_separator<char> FRADateSep("xX");
             tokenizer FRADateTokens(dateStr, FRADateSep);
 
@@ -56,13 +56,13 @@ Instrument* Instrument::parseString(std::string& instrDefStr)
             tokIter ++;
             std::string maturity = *tokIter;
             
-            Instrument *instr = new FRAInstr(startDuration, maturity, id);
+            InstrumentDefinition *instr = new FRAInstrDefinition(startDuration, maturity, id);
             return instr;
         }
         else if(boost::iequals(instrumentType, std::string("SWAP")))
         {
             // InstrumentType is SWAP
-            Instrument *instr = new SWAPInstr(dateStr, id);
+            InstrumentDefinition *instr = new SWAPInstrDefinition(dateStr, id);
             return instr;
         }
         else
@@ -78,53 +78,58 @@ Instrument* Instrument::parseString(std::string& instrDefStr)
 
 }
 
+//////////////////////////////////////////
+// Definition of CASHInstrDefinition class
+//////////////////////////////////////////
+CASHInstrDefinition::CASHInstrDefinition(std::string& maturity, int index):
+    InstrumentDefinition(maturity, index)
+{
+    _type = InstrumentDefinition::CASH;
+}
 
-//////////////////////////////////////////
-// Definition of CASHInstr class
-//////////////////////////////////////////
-CASHInstr::CASHInstr(std::string& maturity, int index):
-    Instrument(maturity, index)
+CASHInstrDefinition::~CASHInstrDefinition()
 {
 }
 
-CASHInstr::~CASHInstr()
+std::string CASHInstrDefinition::subtype() const
 {
-}
-
-std::string CASHInstr::subtype() const
-{
+    return _maturity;
 }
 //////////////////////////////////////////
-// Definition of FRAInstr class
+// Definition of FRAInstrDefinition class
 //////////////////////////////////////////
-FRAInstr::FRAInstr(std::string& startDuration,
+FRAInstrDefinition::FRAInstrDefinition(std::string& startDuration,
         std::string& maturity, int index):
-    _startDuration(startDuration), Instrument(maturity, index)
+    _startDuration(startDuration), InstrumentDefinition(maturity, index)
+{
+    _type = InstrumentDefinition::FRA;
+}
+
+FRAInstrDefinition::~FRAInstrDefinition()
 {
 }
 
-FRAInstr::~FRAInstr()
+std::string FRAInstrDefinition::subtype() const
 {
-}
-
-std::string FRAInstr::subtype() const
-{
+    return _startDuration + "x" + _maturity;
 }
 
 //////////////////////////////////////////
-// Definition of SWAPInstr class
+// Definition of SWAPInstrDefinition class
 //////////////////////////////////////////
-SWAPInstr::SWAPInstr(std::string& maturity, int index):
-    Instrument(maturity, index)
+SWAPInstrDefinition::SWAPInstrDefinition(std::string& maturity, int index):
+    InstrumentDefinition(maturity, index)
+{
+    _type = InstrumentDefinition::SWAP;
+}
+
+SWAPInstrDefinition::~SWAPInstrDefinition()
 {
 }
 
-SWAPInstr::~SWAPInstr()
+std::string SWAPInstrDefinition::subtype() const
 {
-}
-
-std::string SWAPInstr::subtype() const
-{
+    return _maturity;
 }
 
 //////////////////////////////////////////

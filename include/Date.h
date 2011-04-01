@@ -6,45 +6,22 @@
 class Date
 {
     public:
-        Date(std::string& str);
+        enum DATETYPE {ACT365, ACT365J};
+
+        explicit Date(std::string& str, enum DATETYPE type);
         ~Date();
 
-        static Date* today();
+        static Date& today(Date::DATETYPE type);
 
-        virtual Date* nWorkdaysAfter(int days) const = 0;
-        virtual Date* nWorkdaysBefore(int days) const = 0;
-        virtual bool isWorkday(Date& date) const = 0;
-
-        virtual int operator-(Date& rhs) const = 0;
-};
-
-class ACT365:
-    public Date
-{
-    public:
-        ACT365(std::string& str);
-        ~ACT365();
-
-        virtual Date* nWorkdaysAfter(int days) const;
-        virtual Date* nWorkdaysBefore(int days) const;
+        virtual Date nWorkdaysAfter(int days) const;
+        virtual Date nWorkdaysBefore(int days) const;
         virtual bool isWorkday(Date& date) const;
 
         virtual int operator-(Date& rhs) const;
+        virtual Date& operator+(std::string& durationStr) const;
+
+    private:
+        DATETYPE _type;
 };
 
-class ACT365J:
-    public Date
-{
-    public:
-        ACT365J(std::string& str);
-        ~ACT365J();
-
-        virtual Date* nWorkdaysAfter(int days) const;
-        virtual Date* nWorkdaysBefore(int days) const;
-        virtual bool isWorkday(Date& date) const;
-
-        virtual int operator-(Date& rhs) const;
-};
-
-//typedef ACT365 CurrDateType;
 #endif // _INCLUDE_DATE_H_ 

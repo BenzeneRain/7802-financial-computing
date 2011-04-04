@@ -26,10 +26,19 @@ class YieldCurve
         virtual std::pair<Date, double> operator[](std::string dateStr);
         virtual std::pair<Date, double> operator[](Date& date);
     protected:
+        // map from the instrument id to the vector index
+        // of the instrument definition
         std::map<int, int> _instrDefIndicesMap;
+
+        // map from the vector index of the instrument definition
+        // to the instrument value index
+        std::map<int, int> _instrValIndicesMap;
+
         std::vector<InstrumentDefinition *> _instrDefs;
         InstrumentValues* _instrValues;
         double _compoundFreq;
+
+        std::vector<std::pair<Date, double> > _curveData;
 };
 
 class ZeroCouponRateCurve:

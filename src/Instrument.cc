@@ -17,6 +17,35 @@ InstrumentDefinition::~InstrumentDefinition()
 {
 }
 
+bool InstrumentDefinition::cmp(const InstrumentDefinition& i1,
+        const InstrumentDefinition& i2)
+{
+    int timeI1, timeI2;
+
+    timeI1 = i1.maturityInDay();
+    timeI2 = i2.maturityInDay();
+
+    if(timeI1 == timeI2)
+    {
+        if((i1.type() == CASH &&
+            (i2.type() == FRA || i2.type() == SWAP)) ||
+                (i1.type() == FRA && i2.type() == SWAP))
+            return true;
+        else
+            return false;
+    }
+    else
+        return timeI1 < timeI2;
+
+    return true;
+}
+
+bool InstrumentDefinition::ptrcmp(const InstrumentDefinition* pi1,
+        const InstrumentDefinition* pi2)
+{
+    return InstrumentDefinition::cmp(*pi1, *pi2);
+}
+
 InstrumentDefinition* InstrumentDefinition::parseString(std::string& instrDefStr)
 {
     try
@@ -91,6 +120,11 @@ CASHInstrDefinition::~CASHInstrDefinition()
 {
 }
 
+int CASHInstrDefinition::maturityInDay() const
+{
+    return 0;
+}
+
 std::string CASHInstrDefinition::subtype() const
 {
     return _maturity;
@@ -109,6 +143,11 @@ FRAInstrDefinition::~FRAInstrDefinition()
 {
 }
 
+int FRAInstrDefinition::maturityInDay() const
+{
+    return 0;
+}
+
 std::string FRAInstrDefinition::subtype() const
 {
     return _startDuration + "x" + _maturity;
@@ -125,6 +164,11 @@ SWAPInstrDefinition::SWAPInstrDefinition(std::string& maturity, int index):
 
 SWAPInstrDefinition::~SWAPInstrDefinition()
 {
+}
+
+int SWAPInstrDefinition::maturityInDay() const
+{
+    return 0;
 }
 
 std::string SWAPInstrDefinition::subtype() const

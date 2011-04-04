@@ -8,24 +8,21 @@
 //////////////////////////////////////////
 // Definition of the class YieldCurve
 //////////////////////////////////////////
-YieldCurve::YieldCurve(std::vector<InstrumentDefinition *>& instrDefs)
+YieldCurve::YieldCurve(std::vector<InstrumentDefinition *>& instrDefs, double compoundFreq):
+    _compoundFreq(compoundFreq)
 {
     _instrValues = NULL;
+    _instrDefs = instrDefs;
 
-    // Prepare mapping between Instrument indices and their definitions
-    std::map<int, InstrumentDefinition *>().swap(_instrDefs);
-    
+    // Sort instrument definitions
+    sort(_instrDefs.begin(), _instrDefs.end(),
+            InstrumentDefinition::ptrcmp);
 
-    // FIX: Be careful stack overflow
-    for(std::vector<InstrumentDefinition *>::iterator iter = instrDefs.begin();
-            iter != instrDefs.end(); iter ++)
-    {
-        InstrumentDefinition* ptrInstrDef =
-            static_cast<InstrumentDefinition *>(*iter);
-        
-        int index = ptrInstrDef->index(); 
-        _instrDefs[index] = ptrInstrDef;
-    }
+    // Build mapping between instrument index to 
+    // the instrument definition location in the vector
+    std::map<int, int>().swap(_instrDefIndicesMap);
+    for(int i = 0; i < (int)_instrDefs.size(); i ++)
+        _instrDefIndicesMap[i] = _instrDefs[i]->index();    
 }
 
 YieldCurve::~YieldCurve()
@@ -39,7 +36,7 @@ InstrumentValues* YieldCurve::bindData(InstrumentValues *instrVals)
             iter != instrVals->values.end(); iter ++)
     {
         std::pair<int, double>& val = *iter;
-        if(_instrDefs.find(val.first) == _instrDefs.end())
+        if(_instrDefIndicesMap.find(val.first) == _instrDefIndicesMap.end())
         {
             std::ostringstream oss;
             oss << "Invalid instrument data index " << val.first;
@@ -56,8 +53,8 @@ InstrumentValues* YieldCurve::bindData(InstrumentValues *instrVals)
 //////////////////////////////////////////
 // Definition of the class ZeroCouponRateCurve
 //////////////////////////////////////////
-ZeroCouponRateCurve::ZeroCouponRateCurve(std::vector<InstrumentDefinition *>& instrDefs):
-    YieldCurve(instrDefs)
+ZeroCouponRateCurve::ZeroCouponRateCurve(std::vector<InstrumentDefinition *>& instrDefs, double compoundFreq):
+    YieldCurve(instrDefs, compoundFreq)
 {
 }
 
@@ -65,8 +62,10 @@ ZeroCouponRateCurve::~ZeroCouponRateCurve()
 {
 }
 
+
 void ZeroCouponRateCurve::updateCurve()
 {
+    
 }
 
 ////////////////////////////////////////////

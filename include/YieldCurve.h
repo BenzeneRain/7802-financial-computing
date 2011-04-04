@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <utility>
+#include <cmath>
 
 class Date; // Forward Declaration of Date class in "Date.h"
 class InstrumentDefinition; // Forward Declaration of InstrumentDefinition class in "Instrument.h"
@@ -12,7 +13,7 @@ class InstrumentValues; // Forwaed Declaration of InstrumentValues class in "Ins
 class YieldCurve
 {
     public:
-        explicit YieldCurve(std::vector<InstrumentDefinition *>& instrDefs);
+        explicit YieldCurve(std::vector<InstrumentDefinition *>& instrDefs, double compoundFreq);
         ~YieldCurve();
 
         // Section about Instrument Definitions
@@ -25,15 +26,17 @@ class YieldCurve
         virtual std::pair<Date, double> operator[](std::string dateStr);
         virtual std::pair<Date, double> operator[](Date& date);
     protected:
-        std::map<int, InstrumentDefinition *> _instrDefs;
+        std::map<int, int> _instrDefIndicesMap;
+        std::vector<InstrumentDefinition *> _instrDefs;
         InstrumentValues* _instrValues;
+        double _compoundFreq;
 };
 
 class ZeroCouponRateCurve:
     public YieldCurve
 {
     public:
-        ZeroCouponRateCurve(std::vector<InstrumentDefinition *>& instrDefs);
+        ZeroCouponRateCurve(std::vector<InstrumentDefinition *>& instrDefs, double compoundFreq);
         ~ZeroCouponRateCurve();
 
         // Section about Instrument Definitions
@@ -41,7 +44,21 @@ class ZeroCouponRateCurve:
         // Section about Instrument Values
 
         // Section about Curve Data
+        
         virtual void updateCurve();
+
+    private:
+        // Section about Curve Data
+        inline double dfToZ(double df, double deltaT)
+        {
+            return _compoundFreq * (
+                    exp(-log(df) / (_compoundFreq * deltaT)) - 1.0f);
+        }
+        inline double ZTodf(double Z, double deltaT)
+        {
+            return exp(-1.0f * deltaT * _compoundFreq *
+                    log(1.0f + Z / _compoundFreq));
+        }
 };
 
 class YieldCurveException

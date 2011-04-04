@@ -16,6 +16,14 @@ class InstrumentDefinition
 
         inline enum TYPES type() const {return _type;}
         virtual std::string subtype() const = 0;
+        virtual int maturityInDay() const = 0;
+
+        // HELPER FUNCTION for SORTING InstrumentDefinition
+        static bool cmp(const InstrumentDefinition& i1,
+                const InstrumentDefinition& i2);
+        static bool ptrcmp(const InstrumentDefinition* pi1,
+                const InstrumentDefinition* pi2);
+
 
     protected:
         InstrumentDefinition(std::string maturity, int index);
@@ -33,6 +41,7 @@ class CASHInstrDefinition:
         ~CASHInstrDefinition();
 
         virtual std::string subtype() const;
+        virtual int maturityInDay() const;
 };
 
 class FRAInstrDefinition:
@@ -43,6 +52,7 @@ class FRAInstrDefinition:
         ~FRAInstrDefinition();
 
         virtual std::string subtype() const;
+        virtual int maturityInDay() const;
     protected:
         std::string _startDuration;
 };
@@ -56,6 +66,7 @@ class SWAPInstrDefinition:
         ~SWAPInstrDefinition();
 
         virtual std::string subtype() const;
+        virtual int maturityInDay() const;
 };
 
 
@@ -65,15 +76,20 @@ class InstrumentValues
         InstrumentValues();
         ~InstrumentValues();
 
+
         // use pair(index, rate) to represent the Instrument values 
         std::vector<std::pair<int, double> > values;
 };
+
+
+
 
 class InstrumentException
 {
     public:
         InstrumentException(std::string& errorStr);
         ~InstrumentException();
+
 
         inline std::string message(){return _errorMessage;}
     private:

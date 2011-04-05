@@ -5,31 +5,28 @@
 
 class Date;
 
-class Interpolation
+struct Interpolation
 {
     Interpolation();
     ~Interpolation();
 
     template<class XAXIS, class YAXIS> static inline
-    std::pair<XAXIS, YAXIS> linearInterpolation(
-            std::pair<XAXIS, YAXIS>& p1,
-            std::pair<XAXIS, YAXIS>& p2,
-            XAXIS& xVal); 
+    YAXIS linearInterpolation(
+            const std::pair<XAXIS, YAXIS>& p1,
+            const std::pair<XAXIS, YAXIS>& p2,
+            const XAXIS& xVal); 
 };
 
 
 template<class XAXIS, class YAXIS>
-std::pair<XAXIS, YAXIS> Interpolation::linearInterpolation(
-        std::pair<XAXIS, YAXIS>& p1,
-        std::pair<XAXIS, YAXIS>& p2,
-        XAXIS& xVal)
+YAXIS Interpolation::linearInterpolation(
+        const std::pair<XAXIS, YAXIS>& p1,
+        const std::pair<XAXIS, YAXIS>& p2,
+        const XAXIS& xVal)
 {
-    return std::pair<XAXIS, YAXIS>(XAXIS(xVal),
-            YAXIS(
-                ((p2.second - p1.second) / (p2.first - p1.first)) * 
-                (xVal - p1.first)
-                )
-            );
+    return YAXIS(
+            ((p2.second - p1.second) / (YAXIS)(p2.first - p1.first)) * 
+              (YAXIS)(xVal - p1.first));
 }
 
 #endif // _INCLUDE_UTILITY_H_

@@ -18,10 +18,14 @@ class Date
         virtual bool isWorkday(Date& date) const;
 
         virtual int operator-(Date& rhs) const;
-        virtual Date& operator+(std::string& durationStr) const;
+        virtual const Date& operator+(std::string& durationStr) const;
+        virtual bool operator<(const Date& rhs) const;
 
     private:
         DATETYPE _type;
 };
 
+// Non-member function
+//bool operator<(const Date& lhs, const Date& rhs);
+int operator-(const Date& lhs, const Date& rhs);
 #endif // _INCLUDE_DATE_H_ 

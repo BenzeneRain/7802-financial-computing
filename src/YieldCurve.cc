@@ -1,5 +1,6 @@
 #include <sstream>
 #include <string>
+#include <algorithm>
 
 #include "YieldCurve.h"
 #include "Instrument.h"
@@ -61,6 +62,67 @@ InstrumentValues* YieldCurve::bindData(InstrumentValues *instrVals)
     return prevInstrValues;
 }
 
+double YieldCurve::operator[](Date& date) const
+{
+    std::map<Date, int>::const_iterator iter =
+        _curveDataIndicesMap.find(date);
+
+    if(iter == _curveDataIndicesMap.end())
+    {
+        // TODO: Use linear interpolation to 
+        // calculate the value
+        CurveDataType fakeData(date, 0.0);
+
+        std::vector<CurveDataType>::const_iterator low, high;
+
+        low = std::upper_bound(
+                _curveData.begin(), _curveData.end(),
+                fakeData, CurveDataCompare());
+        high = std::lower_bound(
+                _curveData.begin(), _curveData.end(),
+                fakeData, CurveDataCompare());
+
+        double zVal = Interpolation::linearInterpolation
+            <Date, double>(*low, *high, (const Date&)date);
+
+        return zVal;
+    }
+    else
+    {
+        return _curveData[iter->second].second;
+    }
+}
+
+int YieldCurve::operator[](Date& date)
+{
+    std::map<Date, int>::iterator iter =
+        _curveDataIndicesMap.find(date);
+
+    if(iter == _curveDataIndicesMap.end())
+    {
+        _curveData.push_back(std::pair<Date, double>(Date(date), 0));
+        int index = (int)_curveData.size() - 1;
+        _curveDataIndicesMap[date] = index; 
+
+        return index;
+    }
+    else
+    {
+        return iter->second;
+    }
+}
+
+void YieldCurve::_insertCurveData(Date& date, double zVal, int instrDefIndex)
+{
+    // TODO: Before we decide to use this value,
+    // we actually need to check if their is another
+    // definition has the same maturity Date
+
+    unsigned int index = (*this)[date];
+    _curveData[index].second = zVal;
+    _curveDataToInstrDefMap[date] = instrDefIndex;
+
+}
 //////////////////////////////////////////
 // Definition of the class ZeroCouponRateCurve
 //////////////////////////////////////////
@@ -78,6 +140,9 @@ void ZeroCouponRateCurve::updateCurve()
 {
     // Remove all the old curve data first
     std::vector<std::pair<Date, double> >().swap(_curveData);
+    std::map<Date, int>().swap(_curveDataIndicesMap);
+    std::map<Date, int>().swap(_curveDataToInstrDefMap);
+
     Date today = Date::today(Date::ACT365);
     
     // Assumption here is the _instrDefs is ordered
@@ -105,11 +170,36 @@ void ZeroCouponRateCurve::updateCurve()
                         double df = 1.0f / (1.0f + rate * deltaT);
                         double Z = dfToZ(df, deltaT);
 
-                        _curveData.push_back(std::pair<Date, double>(maturityDate, Z));
+                        _insertCurveData(maturityDate, Z, i);
                         break;
                     }
                 case InstrumentDefinition::FRA:
                     {
+                        // TODO: Calculate maturity Date
+                        Date maturityDate = Date::today(Date::ACT365);
+                        // TODO: Calculate start Date
+                        Date startDate = Date::today(Date::ACT365);
+
+                        // TODO: Calcualte delte T between
+                        // start Date and maturity Date
+                        //deltaT = maturityDate - startDate;
+
+                        double rate = _instrValues->values[valueIndex].second;
+                        double dfMaturity;
+                        double Z;
+
+                        // TODO: Calculate the dfStart
+                        double dfStart;
+
+                        dfMaturity = dfStart / (1.0f + rate * deltaT);
+
+                        // TODO: Re-calculate delta T, which is
+                        // now the time between today to the
+                        // maturity date
+
+                        Z = dfToZ(dfMaturity, deltaT);
+
+                        _insertCurveData(maturityDate, Z, i);
                         break;
                     }
                 case InstrumentDefinition::SWAP:
@@ -137,3 +227,13 @@ void ZeroCouponRateCurve::updateCurve()
 YieldCurveException::~YieldCurveException()
 {
 }
+
+////////////////////////////////////////////
+//// Definition of the struct CurveDataCompare
+////////////////////////////////////////////
+bool CurveDataCompare::operator()(const CurveDataType& lhs, const CurveDataType& rhs) const
+{
+    return lhs.first < rhs.first;
+}
+
+

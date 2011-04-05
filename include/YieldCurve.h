@@ -5,10 +5,14 @@
 #include <map>
 #include <utility>
 #include <cmath>
+#include <functional>
 
 class Date; // Forward Declaration of Date class in "Date.h"
+struct DateCompare;
 class InstrumentDefinition; // Forward Declaration of InstrumentDefinition class in "Instrument.h"
 class InstrumentValues; // Forwaed Declaration of InstrumentValues class in "Instrument.h"
+
+typedef std::pair<Date, double> CurveDataType;
 
 class YieldCurve
 {
@@ -23,9 +27,12 @@ class YieldCurve
 
         // Section about Curve Data
         virtual void updateCurve() = 0;
-        virtual std::pair<Date, double> operator[](std::string dateStr);
-        virtual std::pair<Date, double> operator[](Date& date);
+        double operator[](Date& date) const;
     protected:
+        int operator[](Date& date);
+        void _insertCurveData(Date& date, double zVal, int instrDefIndex);
+        //virtual _calcCurveDate(Date)
+
         // map from the instrument id to the vector index
         // of the instrument definition
         std::map<int, int> _instrDefIndicesMap;
@@ -39,6 +46,15 @@ class YieldCurve
         double _compoundFreq;
 
         std::vector<std::pair<Date, double> > _curveData;
+
+        // map from the Date to the vector index of 
+        // _curveDate
+        std::map<Date, int> _curveDataIndicesMap;
+
+        // map from the Date to the vector index of
+        // the corresponding Instrument Definition
+        std::map<Date, int> _curveDataToInstrDefMap;
+
 };
 
 class ZeroCouponRateCurve:
@@ -68,6 +84,9 @@ class ZeroCouponRateCurve:
             return exp(-1.0f * deltaT * _compoundFreq *
                     log(1.0f + Z / _compoundFreq));
         }
+
+        virtual std::pair<Date, double>& operator[](std::string dateStr);
+        virtual std::pair<Date, double>& operator[](Date& date);
 };
 
 class YieldCurveException
@@ -82,5 +101,12 @@ class YieldCurveException
     private:
         std::string _message;
 };
+
+struct CurveDataCompare:
+    public std::binary_function<CurveDataType, CurveDataType, bool>
+{
+    bool operator()(const CurveDataType& lhs, const CurveDataType& rhs) const;
+};
+
 
 #endif //_INCLUDE_YIELDCURVE_H_

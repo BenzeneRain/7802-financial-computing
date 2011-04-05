@@ -12,7 +12,7 @@ Date::~Date()
 {
 }
 
-Date& Date::today(Date::DATETYPE type)
+Date Date::today(Date::DATETYPE type)
 {
 }
 

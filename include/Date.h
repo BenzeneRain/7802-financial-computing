@@ -11,7 +11,7 @@ class Date
         explicit Date(std::string& str, enum DATETYPE type);
         ~Date();
 
-        static Date& today(Date::DATETYPE type);
+        static Date today(Date::DATETYPE type);
 
         virtual Date nWorkdaysAfter(int days) const;
         virtual Date nWorkdaysBefore(int days) const;

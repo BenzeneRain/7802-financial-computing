@@ -3,6 +3,7 @@
 
 #include "YieldCurve.h"
 #include "Instrument.h"
+#include "Date.h"
 
 
 //////////////////////////////////////////
@@ -49,9 +50,9 @@ InstrumentValues* YieldCurve::bindData(InstrumentValues *instrVals)
     InstrumentValues* prevInstrValues = _instrValues;
     _instrValues = instrVals;
 
-    for(int i = 0; i < (int)_instrValues.size(); i ++)
+    for(int i = 0; i < (int)_instrValues->values.size(); i ++)
     {
-        std::pair<int, double>& val = _instrValues[i];
+        std::pair<int, double>& val = _instrValues->values[i];
         
         _instrValIndicesMap[_instrDefIndicesMap[val.first]] = i;
     }
@@ -75,7 +76,8 @@ ZeroCouponRateCurve::~ZeroCouponRateCurve()
 void ZeroCouponRateCurve::updateCurve()
 {
     // Remove all the old curve data first
-    std::vector<std::pair(Date, double)>().swap(_curveDate);
+    std::vector<std::pair<Date, double> >().swap(_curveData);
+    Date today = Date::today(Date::ACT365);
     
     // Assumption here is the _instrDefs is ordered
 
@@ -83,23 +85,41 @@ void ZeroCouponRateCurve::updateCurve()
     {
         if(_instrValIndicesMap.find(i) != _instrValIndicesMap.end())
         {
+            int valueIndex = _instrValIndicesMap[i];
+            InstrumentDefinition& instrDef = *_instrDefs[i];
+            int deltaT = 0;
             // TODO: Calculate the point on the curve and insert
             // into curve data
 
             // TODO: Handle the instruments with different type
             // but have the same maturity date
-            switch(_instrDefs[i]->type())
+            switch(instrDef.type())
             {
-                case CASH:
+                case InstrumentDefinition::CASH:
+                    {
+                        // TODO: Calculate maturity Date
+                        Date maturityDate = Date::today(Date::ACT365);
+                        // TODO: calculate delta T
+                        double rate = _instrValues->values[valueIndex].second;
+                        double df = 1.0f / (1.0f + rate * deltaT);
+                        double Z = dfToZ(df, deltaT);
 
-                    break;
-                case FRA:
-                    break;
-                case SWAP:
-                    break;
+                        _curveData.push_back(std::pair<Date, double>(maturityDate, Z));
+                        break;
+                    }
+                case InstrumentDefinition::FRA:
+                    {
+                        break;
+                    }
+                case InstrumentDefinition::SWAP:
+                    {
+                        break;
+                    }
                 default:
-                    // TODO: throw error
-                    break;
+                    {
+                        // TODO: throw error
+                        break;
+                    }
             }
         }
         else

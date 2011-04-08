@@ -69,7 +69,7 @@ double YieldCurve::operator[](Date& date) const
 
     if(iter == _curveDataIndicesMap.end())
     {
-        // TODO: Use linear interpolation to 
+        // Use linear interpolation to 
         // calculate the value
         CurveDataType fakeData(date, 0.0);
 

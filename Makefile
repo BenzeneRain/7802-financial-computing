@@ -1,16 +1,22 @@
-SOURCE_PATH = $(CURDIR)/src
 TEST_PATH = $(CURDIR)/test
 
+export PROJ_ROOT = $(CURDIR)
+export SOURCE_PATH = $(CURDIR)/src
 export LIB_PATH = $(CURDIR)/lib
 export CXX = llvm-g++
 
-.PHONY: all test clean
+.PHONY: all test run-test clean
 
-all:
+all: source test
+
+source:
 	$(MAKE) -C $(SOURCE_PATH)
 
 test:
 	$(MAKE) -C $(TEST_PATH)
+
+run-test:
+	$(MAKE) -C $(TEST_PATH) run
 
 clean:
 	$(MAKE) -C $(SOURCE_PATH) clean

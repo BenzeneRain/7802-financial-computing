@@ -1,3 +1,4 @@
+#include <sstream>
 #include <boost/algorithm/string.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
@@ -50,13 +51,16 @@ InstrumentDefinition* InstrumentDefinition::parseString(std::string& instrDefStr
 {
     try
     {
+        std::string trimedString = instrDefStr;
         std::string instrumentType;
         std::string dateStr;
         int id;
 
+        boost::trim_if(trimedString, boost::algorithm::is_any_of("\r\n"));
+
         typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
         boost::char_separator<char> sep(",");
-        tokenizer tokens(instrDefStr, sep);
+        tokenizer tokens(trimedString, sep);
 
         tokenizer::iterator tokIter = tokens.begin();
         instrumentType = *tokIter;

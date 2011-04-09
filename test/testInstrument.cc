@@ -4,10 +4,10 @@
 #include "gtest/gtest.h"
 #include "Instrument.h"
 
-TEST(c7802Test, InstrumentInitializationTest)
+TEST(c7802Test, InstrumentInitializationTest1)
 {
-    std::ifstream fin("curveSpec.csv");
-    std::ifstream cmpfin("curveSpecCmp.txt");
+    std::ifstream fin("testInstrumentData/curveSpec1.csv");
+    std::ifstream cmpfin("testInstrumentData/curveSpecCmp.txt");
     std::string line;
 
     std::string cmaturity, ctype;
@@ -43,6 +43,26 @@ TEST(c7802Test, InstrumentInitializationTest)
 
     fin.close();
     cmpfin.close();
+}
+
+TEST(c7802Test, InstrumentInitializationTest2)
+{
+    std::ifstream fin("testInstrumentData/curveSpec2.csv");
+    std::string line;
+
+    getline(fin, line);
+    
+    while(fin.good())
+    {
+        getline(fin, line);
+        if(!fin.good())
+            break;
+
+        EXPECT_ANY_THROW(InstrumentDefinition::parseString(line)) <<
+            "Input string is: " << line;
+    }
+
+    fin.close();
 }
 
 int main(int argc, char * argv[])

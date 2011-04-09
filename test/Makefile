@@ -7,7 +7,7 @@ CFLAGS += -I$(GTEST_HEADER_PATH) -I$(PROJ_ROOT)/include -isystem/opt/local/inclu
 TEST_SOURCE_FILES = testDate.cc testInstrument.cc testYieldCurve.cc
 TEST_OBJECT_FILES = $(patsubst %.cc, %, $(TEST_SOURCE_FILES))
 
-DEP_LIBS = $(SOURCE_PATH)/YieldCurve.a $(GTEST_LIB)
+DEP_LIBS = $(SOURCE_PATH)/YieldCurve.a $(GTEST_LIB) $(LIB_PATH)/boost/libboost_regex.a
 
 .PHONY: all clean run
 

@@ -1,3 +1,5 @@
+#include <boost/regex.hpp>
+
 #include "Date.h"
 
 /////////////////////////////////////////
@@ -56,3 +58,34 @@ bool operator<(const Date& lhs, const Date& rhs)
 //{
 //    return 0;
 //}
+
+
+/////////////////////////////////////////
+// Definition of the class Duration
+//////////////////////////////////////////
+Duration::Duration(std::string& durStr)
+{
+    if(!Duration::isValidDuration(durStr))
+        throw DurationException(durStr);
+
+
+}
+
+Duration::~Duration()
+{
+}
+
+bool Duration::isValidDuration(std::string& durStr)
+{
+    static const boost::regex format("^(ON)|(O/N)|(TN)|(T/N)|"
+            "([[:digit:]]+(\\.[[:digit:]]+)?(D|W|M|Y|Q))$",
+            boost::regex::icase);
+    
+    return boost::regex_match(durStr, format);
+}
+
+std::string getDuration(Duration::TYPE type)
+{
+    return std::string("");
+}
+

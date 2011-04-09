@@ -63,13 +63,23 @@ InstrumentDefinition* InstrumentDefinition::parseString(std::string& instrDefStr
         tokenizer tokens(trimedString, sep);
 
         tokenizer::iterator tokIter = tokens.begin();
+        if(tokIter == tokens.end())
+            throw InstrumentException(instrDefStr);
         instrumentType = *tokIter;
 
         tokIter ++;
+        if(tokIter == tokens.end())
+            throw InstrumentException(instrDefStr);
         dateStr = *tokIter;
         
         tokIter ++;
+        if(tokIter == tokens.end())
+            throw InstrumentException(instrDefStr);
         id = boost::lexical_cast<int>(*tokIter);
+
+        tokIter ++;
+        if(tokIter != tokens.end())
+            throw InstrumentException(instrDefStr);
 
         if(boost::iequals(instrumentType, std::string("CASH")))
         {
@@ -84,11 +94,19 @@ InstrumentDefinition* InstrumentDefinition::parseString(std::string& instrDefStr
             tokenizer FRADateTokens(dateStr, FRADateSep);
 
             tokIter = FRADateTokens.begin();
+            if(tokIter == FRADateTokens.end())
+                throw InstrumentException(instrDefStr);
             std::string startDuration = *tokIter;
 
             tokIter ++;
+            if(tokIter == FRADateTokens.end())
+                throw InstrumentException(instrDefStr);
             std::string maturity = *tokIter;
             
+            tokIter ++;
+            if(tokIter != FRADateTokens.end())
+                throw InstrumentException(instrDefStr);
+
             InstrumentDefinition *instr = new FRAInstrDefinition(startDuration, maturity, id);
             return instr;
         }
@@ -107,6 +125,10 @@ InstrumentDefinition* InstrumentDefinition::parseString(std::string& instrDefStr
     catch(std::istringstream::failure& e)
     {
         throw;
+    }
+    catch(boost::bad_lexical_cast& e)
+    {
+        throw InstrumentException(instrDefStr);
     }
 
 }

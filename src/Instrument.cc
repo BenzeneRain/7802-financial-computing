@@ -148,7 +148,7 @@ CASHInstrDefinition::~CASHInstrDefinition()
 
 std::string CASHInstrDefinition::subtype() const
 {
-    return _maturity.toString();
+    return _maturity.toString(true, true);
 }
 //////////////////////////////////////////
 // Definition of FRAInstrDefinition class
@@ -166,7 +166,8 @@ FRAInstrDefinition::~FRAInstrDefinition()
 
 std::string FRAInstrDefinition::subtype() const
 {
-    return _startDuration.toString() + "x" + _maturity.toString();
+    return _startDuration.toString(false, false) + 
+        "x" + _maturity.toString(false, false);
 }
 
 //////////////////////////////////////////
@@ -184,7 +185,7 @@ SWAPInstrDefinition::~SWAPInstrDefinition()
 
 std::string SWAPInstrDefinition::subtype() const
 {
-    return _maturity.toString();
+    return _maturity.toString(true, true);
 }
 
 //////////////////////////////////////////

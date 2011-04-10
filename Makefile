@@ -1,5 +1,4 @@
-TEST_PATH = $(CURDIR)/test
-
+export TEST_PATH = $(CURDIR)/test
 export PROJ_ROOT = $(CURDIR)
 export SOURCE_PATH = $(CURDIR)/src
 export LIB_PATH = $(CURDIR)/lib

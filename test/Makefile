@@ -13,7 +13,7 @@ DEP_LIBS = $(SOURCE_PATH)/YieldCurve.a $(GTEST_LIB) $(LIB_PATH)/boost/libboost_r
 
 all: $(DEP_LIBS) $(TEST_OBJECT_FILES)
 
-$(TEST_OBJECT_FILES): %:%.cc  
+$(TEST_OBJECT_FILES): %:%.cc $(DEP_LIBS) 
 	$(CXX) $(CFLAGS) -o $@ $< $(DEP_LIBS)
 
 run: 

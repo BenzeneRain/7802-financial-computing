@@ -9,7 +9,7 @@
 //////////////////////////////////////////
 // Definition of InstrumentDefinition class
 //////////////////////////////////////////
-InstrumentDefinition::InstrumentDefinition(std::string maturity, int index):
+InstrumentDefinition::InstrumentDefinition(std::string& maturity, int index):
     _maturity(maturity), _index(index)
 {
 }
@@ -23,8 +23,8 @@ bool InstrumentDefinition::cmp(const InstrumentDefinition& i1,
 {
     int timeI1, timeI2;
 
-    timeI1 = i1.maturityInDay();
-    timeI2 = i2.maturityInDay();
+    timeI1 = i1.maturity().getDuration(Duration::DAY);
+    timeI2 = i2.maturity().getDuration(Duration::DAY);
 
     if(timeI1 == timeI2)
     {
@@ -146,14 +146,9 @@ CASHInstrDefinition::~CASHInstrDefinition()
 {
 }
 
-int CASHInstrDefinition::maturityInDay() const
-{
-    return 0;
-}
-
 std::string CASHInstrDefinition::subtype() const
 {
-    return _maturity;
+    return _maturity.toString();
 }
 //////////////////////////////////////////
 // Definition of FRAInstrDefinition class
@@ -169,14 +164,9 @@ FRAInstrDefinition::~FRAInstrDefinition()
 {
 }
 
-int FRAInstrDefinition::maturityInDay() const
-{
-    return 0;
-}
-
 std::string FRAInstrDefinition::subtype() const
 {
-    return _startDuration + "x" + _maturity;
+    return _startDuration.toString() + "x" + _maturity.toString();
 }
 
 //////////////////////////////////////////
@@ -192,14 +182,9 @@ SWAPInstrDefinition::~SWAPInstrDefinition()
 {
 }
 
-int SWAPInstrDefinition::maturityInDay() const
-{
-    return 0;
-}
-
 std::string SWAPInstrDefinition::subtype() const
 {
-    return _maturity;
+    return _maturity.toString();
 }
 
 //////////////////////////////////////////

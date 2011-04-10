@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include "Date.h"
+
 // Classes
 class InstrumentDefinition
 {
@@ -11,12 +13,13 @@ class InstrumentDefinition
 
         static InstrumentDefinition* parseString(std::string& instrDefStr);
 
-        enum TYPES {CASH, FRA, SWAP};
+        enum TYPE {CASH, FRA, SWAP};
         inline int index() const {return _index;}
 
-        inline enum TYPES type() const {return _type;}
+        inline enum TYPE type() const {return _type;}
+        inline Duration maturity() const {return _maturity;}
+
         virtual std::string subtype() const = 0;
-        virtual int maturityInDay() const = 0;
 
         // HELPER FUNCTION for SORTING InstrumentDefinition
         static bool cmp(const InstrumentDefinition& i1,
@@ -26,11 +29,11 @@ class InstrumentDefinition
 
 
     protected:
-        InstrumentDefinition(std::string maturity, int index);
+        InstrumentDefinition(std::string& maturity, int index);
 
         int _index;
-        std::string  _maturity;
-        enum TYPES _type;
+        Duration  _maturity;
+        enum TYPE _type;
 };
 
 class CASHInstrDefinition:
@@ -41,7 +44,6 @@ class CASHInstrDefinition:
         ~CASHInstrDefinition();
 
         virtual std::string subtype() const;
-        virtual int maturityInDay() const;
 };
 
 class FRAInstrDefinition:
@@ -52,9 +54,8 @@ class FRAInstrDefinition:
         ~FRAInstrDefinition();
 
         virtual std::string subtype() const;
-        virtual int maturityInDay() const;
     protected:
-        std::string _startDuration;
+        Duration _startDuration;
 };
 
 class SWAPInstrDefinition:
@@ -66,7 +67,6 @@ class SWAPInstrDefinition:
         ~SWAPInstrDefinition();
 
         virtual std::string subtype() const;
-        virtual int maturityInDay() const;
 };
 
 

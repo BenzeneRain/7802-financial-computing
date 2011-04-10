@@ -33,12 +33,13 @@ int operator-(const Date& lhs, const Date& rhs);
 class Duration
 {
     public:
-        enum TYPE {DAY, WEEK, MONTH, QUARTER, YEAR};
+        enum TYPE {DAY, WEEK, MONTH, QUARTER, YEAR, INVALID};
 
+        Duration():_duration(-1), _type(INVALID){};
         explicit Duration(std::string& durStr);
         Duration(double duration, Duration::TYPE type):
             _duration(duration), _type(type){};
-        Duration(Duration& rDur):
+        Duration(const Duration& rDur):
             _duration(rDur._duration),
             _type(rDur._type){};
 
@@ -46,8 +47,11 @@ class Duration
 
         static bool isValidDuration(std::string& durStr);
 
-        std::string getDuration(Duration::TYPE type);
-        inline Duration::TYPE type() {return _type;}
+        double getDuration(Duration::TYPE type) const;
+        inline Duration::TYPE type() const {return _type;}
+        std::string toString(bool literal = false, bool hasUnit = true) const ;
+        std::string toString(Duration::TYPE type,
+                bool literal = false, bool hasUnit = true) const;
         
     private:
         TYPE _type;

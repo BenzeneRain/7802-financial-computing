@@ -4,7 +4,23 @@
 #include "gtest/gtest.h"
 #include "Instrument.h"
 
-TEST(c7802Test, InstrumentInitializationTest1)
+class InstrumentTest : public testing::Test
+{
+    protected:
+        static void SetUpTestCase()
+        {
+            std::cout << "-------- Start Testing Instrument Class --------"
+                << std::endl;
+        }
+
+        static void TearDownTestCase()
+        {
+            std::cout << "-------- Finish Testing Instrument Class --------"
+                << std::endl << std::endl;
+        }
+};
+
+TEST_F(InstrumentTest, InstrumentInitializationTest1)
 {
     std::ifstream fin("testInstrumentData/curveSpec1.csv");
     std::ifstream cmpfin("testInstrumentData/curveSpecCmp.txt");
@@ -45,7 +61,7 @@ TEST(c7802Test, InstrumentInitializationTest1)
     cmpfin.close();
 }
 
-TEST(c7802Test, InstrumentInitializationTest2)
+TEST_F(InstrumentTest, InstrumentInitializationTest2)
 {
     std::ifstream fin("testInstrumentData/curveSpec2.csv");
     std::string line;
@@ -65,8 +81,25 @@ TEST(c7802Test, InstrumentInitializationTest2)
     fin.close();
 }
 
+class CustomedTestEnvironment : public testing::Environment
+{
+    public:
+        virtual void SetUp()
+        {
+            std::cout << "@@@@@@@@ Begin testing Instrument.cc @@@@@@@@" 
+                << std::endl;
+        }
+
+        virtual void TearDown()
+        {
+            std::cout << "@@@@@@@@ Finish testing Instrument.cc @@@@@@@@"
+                << std::endl << std::endl << std::endl;
+        }
+};
+
 int main(int argc, char * argv[])
 {
+    testing::AddGlobalTestEnvironment(new CustomedTestEnvironment);
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

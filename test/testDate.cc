@@ -1,10 +1,25 @@
 #include <string>
+#include <iostream>
 
 #include "gtest/gtest.h"
 #include "Date.h"
 
+class DurationTest : public testing::Test
+{
+    protected:
+        static void SetUpTestCase()
+        {
+            std::cout << "-------- Start Testing Duration Class --------" << std::endl;
+        }
 
-TEST(DurationTest, DurationConstruction)
+        static void TearDownTestCase()
+        {
+            std::cout << "-------- Finish Testing Duration Class --------"
+                << std::endl << std::endl;
+        }
+};
+
+TEST_F(DurationTest, DurationConstruction)
 {
     std::string str;
     std::string& rstr = str;
@@ -196,7 +211,7 @@ TEST(DurationTest, DurationConstruction)
     EXPECT_ANY_THROW(Duration d45(str));
 }
 
-TEST(DurationTest, isValidDuration)
+TEST_F(DurationTest, isValidDuration)
 {
     std::string str;
     std::string& rstr = str;
@@ -286,8 +301,25 @@ TEST(DurationTest, isValidDuration)
     EXPECT_FALSE(Duration::isValidDuration(rstr));
 }
 
+
+class CustomedTestEnvironment : public testing::Environment
+{
+    public:
+        virtual void SetUp()
+        {
+            std::cout << "@@@@@@@@ Begin testing Date.cc @@@@@@@@" << std::endl;
+        }
+
+        virtual void TearDown()
+        {
+            std::cout << "@@@@@@@@ Finish testing Date.cc @@@@@@@@"
+                << std::endl << std::endl << std::endl;
+        }
+};
+
 int main(int argc, char * argv[])
 {
+    testing::AddGlobalTestEnvironment(new CustomedTestEnvironment);
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

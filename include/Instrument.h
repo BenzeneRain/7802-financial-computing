@@ -29,7 +29,7 @@ class InstrumentDefinition
 
 
     protected:
-        InstrumentDefinition(std::string& maturity, int index);
+        InstrumentDefinition(Duration& maturity, int index);
 
         int _index;
         Duration  _maturity;
@@ -40,7 +40,7 @@ class CASHInstrDefinition:
     public InstrumentDefinition
 {
     public:
-        CASHInstrDefinition(std::string& maturity, int index);
+        CASHInstrDefinition(Duration& maturity, int index);
         ~CASHInstrDefinition();
 
         virtual std::string subtype() const;
@@ -50,7 +50,8 @@ class FRAInstrDefinition:
     public InstrumentDefinition
 {
     public:
-        FRAInstrDefinition(std::string& startDuration, std::string& maturity, int index);
+        static const Duration::TYPE defaultDurationType;
+        FRAInstrDefinition(Duration& startDuration, Duration& maturity, int index);
         ~FRAInstrDefinition();
 
         virtual std::string subtype() const;
@@ -63,7 +64,7 @@ class SWAPInstrDefinition:
 
 {
     public:
-        SWAPInstrDefinition(std::string& maturity, int index);
+        SWAPInstrDefinition(Duration& maturity, int index);
         ~SWAPInstrDefinition();
 
         virtual std::string subtype() const;

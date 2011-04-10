@@ -274,7 +274,7 @@ double Duration::getDuration(Duration::TYPE type) const
 
 std::string Duration::toString(bool literal, bool hasUnit) const 
 {
-    return Duration::toString(this->_type, literal);
+    return Duration::toString(this->_type, literal, hasUnit);
 }
 
 std::string Duration::toString(Duration::TYPE type, bool literal, bool hasUnit) const

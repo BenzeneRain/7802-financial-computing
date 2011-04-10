@@ -2,6 +2,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/regex.hpp>
 
 #include "Instrument.h"
 #include "Date.h"
@@ -9,7 +10,7 @@
 //////////////////////////////////////////
 // Definition of InstrumentDefinition class
 //////////////////////////////////////////
-InstrumentDefinition::InstrumentDefinition(std::string& maturity, int index):
+InstrumentDefinition::InstrumentDefinition(Duration& maturity, int index):
     _maturity(maturity), _index(index)
 {
 }
@@ -84,7 +85,8 @@ InstrumentDefinition* InstrumentDefinition::parseString(std::string& instrDefStr
         if(boost::iequals(instrumentType, std::string("CASH")))
         {
             // InstrumentDefinitionType is CASH
-            InstrumentDefinition *instr = new CASHInstrDefinition(dateStr, id);
+            Duration duration(dateStr);
+            InstrumentDefinition *instr = new CASHInstrDefinition(duration, id);
             return instr;
         }
         else if(boost::iequals(instrumentType, std::string("FRA")))
@@ -96,24 +98,54 @@ InstrumentDefinition* InstrumentDefinition::parseString(std::string& instrDefStr
             tokIter = FRADateTokens.begin();
             if(tokIter == FRADateTokens.end())
                 throw InstrumentException(instrDefStr);
-            std::string startDuration = *tokIter;
+            std::string startDurationStr = *tokIter;
 
             tokIter ++;
             if(tokIter == FRADateTokens.end())
                 throw InstrumentException(instrDefStr);
-            std::string maturity = *tokIter;
+            std::string maturityStr = *tokIter;
             
             tokIter ++;
             if(tokIter != FRADateTokens.end())
                 throw InstrumentException(instrDefStr);
 
-            InstrumentDefinition *instr = new FRAInstrDefinition(startDuration, maturity, id);
+            // Check if the Unit is provided or not
+            static const boost::regex allDigitsFormat("^[[:digit:]]+$");
+            Duration *ptrStartDuration, *ptrMaturity;
+            
+            if(boost::regex_match(startDurationStr, allDigitsFormat))
+            {
+                double startDurationNum = boost::lexical_cast<double>(startDurationStr);
+                Duration startDuration(startDurationNum, FRAInstrDefinition::defaultDurationType);
+                ptrStartDuration = &startDuration;
+            }
+            else
+            {
+                Duration startDuration(startDurationStr);
+                ptrStartDuration = &startDuration;
+            }
+
+            if(boost::regex_match(maturityStr, allDigitsFormat))
+            {
+                double maturityNum = boost::lexical_cast<double>(maturityStr);
+                Duration maturity(maturityNum, FRAInstrDefinition::defaultDurationType);
+                ptrMaturity = &maturity;
+            }
+            else
+            {
+                Duration maturity(maturityStr);
+                ptrMaturity = &maturity;
+            }
+
+            InstrumentDefinition *instr = new FRAInstrDefinition(*ptrStartDuration, *ptrMaturity, id);
             return instr;
         }
         else if(boost::iequals(instrumentType, std::string("SWAP")))
         {
             // InstrumentType is SWAP
-            InstrumentDefinition *instr = new SWAPInstrDefinition(dateStr, id);
+            Duration duration(dateStr);
+
+            InstrumentDefinition *instr = new SWAPInstrDefinition(duration, id);
             return instr;
         }
         else
@@ -136,7 +168,7 @@ InstrumentDefinition* InstrumentDefinition::parseString(std::string& instrDefStr
 //////////////////////////////////////////
 // Definition of CASHInstrDefinition class
 //////////////////////////////////////////
-CASHInstrDefinition::CASHInstrDefinition(std::string& maturity, int index):
+CASHInstrDefinition::CASHInstrDefinition(Duration& maturity, int index):
     InstrumentDefinition(maturity, index)
 {
     _type = InstrumentDefinition::CASH;
@@ -153,8 +185,10 @@ std::string CASHInstrDefinition::subtype() const
 //////////////////////////////////////////
 // Definition of FRAInstrDefinition class
 //////////////////////////////////////////
-FRAInstrDefinition::FRAInstrDefinition(std::string& startDuration,
-        std::string& maturity, int index):
+const Duration::TYPE FRAInstrDefinition::defaultDurationType = Duration::MONTH;
+
+FRAInstrDefinition::FRAInstrDefinition(Duration& startDuration,
+        Duration& maturity, int index):
     _startDuration(startDuration), InstrumentDefinition(maturity, index)
 {
     _type = InstrumentDefinition::FRA;
@@ -173,7 +207,7 @@ std::string FRAInstrDefinition::subtype() const
 //////////////////////////////////////////
 // Definition of SWAPInstrDefinition class
 //////////////////////////////////////////
-SWAPInstrDefinition::SWAPInstrDefinition(std::string& maturity, int index):
+SWAPInstrDefinition::SWAPInstrDefinition(Duration& maturity, int index):
     InstrumentDefinition(maturity, index)
 {
     _type = InstrumentDefinition::SWAP;

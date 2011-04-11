@@ -7,8 +7,8 @@
 /////////////////////////////////////////
 // Definition of the class Date
 //////////////////////////////////////////
-Date::Date(std::string& str, enum DATETYPE type):
-    _type(type)
+Date::Date(boost::gregorian::date& date, enum TYPE type):
+    _type(type), _date(date)
 {
 }
 
@@ -16,50 +16,26 @@ Date::~Date()
 {
 }
 
-Date Date::today(Date::DATETYPE type)
+Date Date::today(Date::TYPE type)
 {
-    return *(static_cast<Date *>(NULL));
+    boost::gregorian::date today = 
+        boost::gregorian::day_clock::local_day();
+    Date dateToday(today, type);
+    return dateToday;
 }
 
-Date Date::nWorkdaysAfter(int days) const
+
+Date Date::operator+(Duration& rhs) const
 {
-    return *(static_cast<Date *>(NULL));
+    //TODO:
+    return Date(*this);
 }
 
-Date Date::nWorkdaysBefore(int days) const
+Duration Date::operator-(Date& rhs) const
 {
-    return *(static_cast<Date *>(NULL));
+    //TODO:
+    return Duration();
 }
-
-bool Date::isWorkday(Date& date) const
-{
-    return true;
-}
-
-int Date::operator-(Date& rhs) const
-{
-    return 0;
-}
-
-const Date& Date::operator+(std::string& durationStr) const
-{
-    return *this;
-}
-
-bool Date::operator<(const Date& rhs) const
-{
-    return true;
-}
-
-bool operator<(const Date& lhs, const Date& rhs)
-{
-    return true;
-}
-
-//int operator-(const Date& lhs, const Date& rhs)
-//{
-//    return 0;
-//}
 
 
 /////////////////////////////////////////
@@ -328,4 +304,12 @@ std::string Duration::toString(Duration::TYPE type, bool literal, bool hasUnit) 
     }
 
     return oss.str();
+}
+
+Duration Duration::operator/(double rhs) const
+{
+    Duration newDuration(this->getDuration(this->type()) / rhs,
+            this->type());
+
+    return newDuration;
 }

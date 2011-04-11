@@ -2,33 +2,9 @@
 #define _INCLUDE_DATE_H_
 
 #include <string>
-
-class Date
-{
-    public:
-        enum DATETYPE {ACT365, ACT365J};
-
-        explicit Date(std::string& str, enum DATETYPE type);
-        ~Date();
-
-        static Date today(Date::DATETYPE type);
-
-        virtual Date nWorkdaysAfter(int days) const;
-        virtual Date nWorkdaysBefore(int days) const;
-        virtual bool isWorkday(Date& date) const;
-
-        virtual int operator-(Date& rhs) const;
-        virtual const Date& operator+(std::string& durationStr) const;
-        virtual bool operator<(const Date& rhs) const;
-
-    private:
-        DATETYPE _type;
-};
-
-// Non-member function
-//bool operator<(const Date& lhs, const Date& rhs);
-int operator-(const Date& lhs, const Date& rhs);
-
+#include <ctime>
+#include <stdexcept>
+#include <boost/date_time/gregorian/gregorian.hpp>
 
 class Duration
 {
@@ -53,21 +29,51 @@ class Duration
         std::string toString(Duration::TYPE type,
                 bool literal = false, bool hasUnit = true) const;
         
+        
+        Duration operator/(double rhs) const;
+        
     private:
-        TYPE _type;
+        Duration::TYPE _type;
         double _duration;
 };
 
-class DurationException
+class DurationException : public std::runtime_error
 {
     public:
         DurationException(std::string& str):
-            _info(str){};
-        ~DurationException(){};
-
-        inline std::string info() {return _info;}
-
-    private:
-        std::string _info;
+            std::runtime_error(str){};
 };
+
+class Date
+{
+    public:
+        enum TYPE {ACT365, ACT365J};
+
+        Date(boost::gregorian::date& date, enum TYPE type);
+        Date(const Date& rdate):
+            _type(rdate._type), _date(rdate._date){};
+
+        ~Date();
+
+        static Date today(Date::TYPE type);
+
+        // Return the nearest next working day after a given
+        // Duration
+        Date operator+(Duration& rhs) const;
+
+        // Return the duration between two dates
+        Duration operator-(Date& rhs) const;
+        
+    private:
+        TYPE _type;
+        boost::gregorian::date _date;
+};
+
+class DateException : public std::runtime_error
+{
+    public:
+        DateException(std::string& e):
+            std::runtime_error(e){};
+};
+
 #endif // _INCLUDE_DATE_H_ 

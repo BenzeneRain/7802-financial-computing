@@ -59,11 +59,12 @@ class Date
 
         // Return the nearest next working day after a given
         // Duration
-        Date operator+(Duration& rhs) const;
+        Date operator+(const Duration& rhs) const;
 
         // Return the duration between two dates
-        Duration operator-(Date& rhs) const;
+        Duration operator-(const Date& rhs) const;
         
+        bool operator<(const Date& rhs) const;
     private:
         TYPE _type;
         boost::gregorian::date _date;

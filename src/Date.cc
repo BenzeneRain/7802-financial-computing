@@ -25,18 +25,23 @@ Date Date::today(Date::TYPE type)
 }
 
 
-Date Date::operator+(Duration& rhs) const
+Date Date::operator+(const Duration& rhs) const
 {
     //TODO:
     return Date(*this);
 }
 
-Duration Date::operator-(Date& rhs) const
+Duration Date::operator-(const Date& rhs) const
 {
     //TODO:
     return Duration();
 }
 
+bool Date::operator<(const Date& rhs) const
+{
+    // TODO:
+    return true;
+}
 
 /////////////////////////////////////////
 // Definition of the class Duration
@@ -313,3 +318,4 @@ Duration Duration::operator/(double rhs) const
 
     return newDuration;
 }
+

@@ -19,35 +19,6 @@ InstrumentDefinition::~InstrumentDefinition()
 {
 }
 
-bool InstrumentDefinition::cmp(const InstrumentDefinition& i1,
-        const InstrumentDefinition& i2)
-{
-    int timeI1, timeI2;
-
-    timeI1 = i1.maturity().getDuration(Duration::DAY);
-    timeI2 = i2.maturity().getDuration(Duration::DAY);
-
-    if(timeI1 == timeI2)
-    {
-        if((i1.type() == CASH &&
-            (i2.type() == FRA || i2.type() == SWAP)) ||
-                (i1.type() == FRA && i2.type() == SWAP))
-            return true;
-        else
-            return false;
-    }
-    else
-        return timeI1 < timeI2;
-
-    return true;
-}
-
-bool InstrumentDefinition::ptrcmp(const InstrumentDefinition* pi1,
-        const InstrumentDefinition* pi2)
-{
-    return InstrumentDefinition::cmp(*pi1, *pi2);
-}
-
 InstrumentDefinition* InstrumentDefinition::parseString(std::string& instrDefStr)
 {
     try
@@ -220,6 +191,40 @@ SWAPInstrDefinition::~SWAPInstrDefinition()
 std::string SWAPInstrDefinition::subtype() const
 {
     return _maturity.toString(true, true);
+}
+
+//////////////////////////////////////////
+// Definition of InstrumentDefinition structure
+//////////////////////////////////////////
+bool InstrumentDefinitionCompare::operator()(
+        const InstrumentDefinition& i1,
+        const InstrumentDefinition& i2) const
+{
+    int timeI1, timeI2;
+
+    timeI1 = i1.maturity().getDuration(Duration::DAY);
+    timeI2 = i2.maturity().getDuration(Duration::DAY);
+
+    if(timeI1 == timeI2)
+    {
+        if((i1.type() == InstrumentDefinition::CASH &&
+            (i2.type() == InstrumentDefinition::FRA || i2.type() == InstrumentDefinition::SWAP)) ||
+                (i1.type() == InstrumentDefinition::FRA && i2.type() == InstrumentDefinition::SWAP))
+            return true;
+        else
+            return false;
+    }
+    else
+        return timeI1 < timeI2;
+
+    return true;
+}
+
+bool InstrumentDefinitionCompare::operator()(
+        const InstrumentDefinition* pi1,
+        const InstrumentDefinition* pi2) const
+{
+    return this->operator()(*pi1, *pi2);
 }
 
 //////////////////////////////////////////

@@ -29,10 +29,6 @@ class YieldCurve
         virtual void updateCurve() = 0;
         double operator[](Date& date) const;
     protected:
-        int operator[](Date& date);
-        void _insertCurveData(Date& date, double zVal, int instrDefIndex);
-        //virtual _calcCurveDate(Date)
-
         // map from the instrument id to the vector index
         // of the instrument definition
         std::map<int, int> _instrDefIndicesMap;
@@ -41,6 +37,8 @@ class YieldCurve
         // to the instrument value index
         std::map<int, int> _instrValIndicesMap;
 
+        // FIX: we need a way to better manage the pointers
+        // maybe by using shared_ptr
         std::vector<InstrumentDefinition *> _instrDefs;
         InstrumentValues* _instrValues;
         double _compoundFreq;
@@ -54,6 +52,10 @@ class YieldCurve
         // map from the Date to the vector index of
         // the corresponding Instrument Definition
         std::map<Date, int> _curveDataToInstrDefMap;
+
+        int operator[](Date& date);
+        void _insertCurveData(Date& date, double zVal, int instrDefIndex);
+        void _insertFakeInstrumentDefs();
 
 };
 

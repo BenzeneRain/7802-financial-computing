@@ -2,6 +2,7 @@
 #define _INCLUDE_INSTRUMENT_H_
 
 #include <string>
+#include <functional>
 
 #include "Date.h"
 
@@ -21,19 +22,23 @@ class InstrumentDefinition
 
         virtual std::string subtype() const = 0;
 
-        // HELPER FUNCTION for SORTING InstrumentDefinition
-        static bool cmp(const InstrumentDefinition& i1,
-                const InstrumentDefinition& i2);
-        static bool ptrcmp(const InstrumentDefinition* pi1,
-                const InstrumentDefinition* pi2);
-
-
     protected:
         InstrumentDefinition(Duration& maturity, int index);
 
         int _index;
         Duration  _maturity;
         enum TYPE _type;
+};
+
+struct InstrumentDefinitionCompare:
+    public std::binary_function<InstrumentDefinition, 
+    InstrumentDefinition, bool>
+{
+    bool operator()(const InstrumentDefinition& lhs,
+            const InstrumentDefinition& rhs) const;
+
+    bool operator()(const InstrumentDefinition* ptrlhs,
+            const InstrumentDefinition* ptrlhs) const;
 };
 
 class CASHInstrDefinition:
@@ -55,6 +60,9 @@ class FRAInstrDefinition:
         ~FRAInstrDefinition();
 
         virtual std::string subtype() const;
+
+        inline Duration startDuration() const
+        {return _startDuration;}
     protected:
         Duration _startDuration;
 };
@@ -71,6 +79,7 @@ class SWAPInstrDefinition:
 };
 
 
+
 class InstrumentValues
 {
     public:
@@ -81,8 +90,6 @@ class InstrumentValues
         // use pair(index, rate) to represent the Instrument values 
         std::vector<std::pair<int, double> > values;
 };
-
-
 
 
 class InstrumentException

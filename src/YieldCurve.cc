@@ -16,10 +16,16 @@ YieldCurve::YieldCurve(std::vector<InstrumentDefinition *>& instrDefs, double co
 {
     _instrValues = NULL;
     _instrDefs = instrDefs;
+    
+    // TODO: check if there are at least two instrument 
+    // Definitions, and one of them is O/N
 
     // Sort instrument definitions
-    sort(_instrDefs.begin(), _instrDefs.end(),
-            InstrumentDefinition::ptrcmp);
+    sort(_instrDefs.begin(), _instrDefs.end(), 
+            InstrumentDefinitionCompare());
+
+    //TODO: Add fake instrument definitions by
+    // interpolation
 
     // Build mapping between instrument index to 
     // the instrument definition location in the vector
@@ -30,6 +36,49 @@ YieldCurve::YieldCurve(std::vector<InstrumentDefinition *>& instrDefs, double co
 
 YieldCurve::~YieldCurve()
 {
+}
+
+void YieldCurve::_insertFakeInstrumentDefs()
+{
+    std::vector<InstrumentDefinition *>::iterator iterCurr =
+        _instrDefs.begin();
+
+    iterCurr ++;
+
+    while(iterCurr != _instrDefs.end())
+    {
+        InstrumentDefinition& currInstrDef =
+            *(static_cast<InstrumentDefinition *>(*iterCurr));
+
+
+        switch(currInstrDef.type())
+        {
+            case InstrumentDefinition::CASH:
+                // We do not need to interpolate
+                // for CASH instrument
+                break;
+            case InstrumentDefinition::FRA:
+                {
+                    Duration startDuration(
+                            dynamic_cast<FRAInstrDefinition&>
+                            (currInstrDef).startDuration()
+                            );
+                    // We need the df of the start Date
+                    break;
+                }
+            case InstrumentDefinition::SWAP:
+                break;
+            default:
+                {
+                    std::string errorMessage("Invalid Instrument"
+                            "Definition Type met in ");
+                    errorMessage += __func__;
+                    throw YieldCurveException(errorMessage);
+                }
+        }
+
+        iterCurr ++;
+    }
 }
 
 InstrumentValues* YieldCurve::bindData(InstrumentValues *instrVals)
@@ -83,7 +132,7 @@ double YieldCurve::operator[](Date& date) const
                 fakeData, CurveDataCompare());
 
         double zVal = Interpolation::linearInterpolation
-            <Date, double>(*low, *high, (const Date&)date);
+            (*low, *high, (const Date&)date);
 
         return zVal;
     }

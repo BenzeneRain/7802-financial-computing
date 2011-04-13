@@ -194,37 +194,81 @@ std::string SWAPInstrDefinition::subtype() const
 }
 
 //////////////////////////////////////////
-// Definition of InstrumentDefinition structure
+// Definition of SWAPInstrDefinition class
+//////////////////////////////////////////
+std::string FAKEInstrDefinition::subtype() const
+{
+    return _maturity.toString(true, true);
+}
+
+//////////////////////////////////////////
+// Definition of InstrumentDefinitionCompare structure
 //////////////////////////////////////////
 bool InstrumentDefinitionCompare::operator()(
-        const InstrumentDefinition& i1,
-        const InstrumentDefinition& i2) const
+        const InstrumentDefinition& lhs,
+        const InstrumentDefinition& rhs) const
 {
     int timeI1, timeI2;
 
-    timeI1 = i1.maturity().getDuration(Duration::DAY);
-    timeI2 = i2.maturity().getDuration(Duration::DAY);
+    timeI1 = lhs.maturity().getDuration(Duration::DAY);
+    timeI2 = rhs.maturity().getDuration(Duration::DAY);
 
     if(timeI1 == timeI2)
     {
-        if((i1.type() == InstrumentDefinition::CASH &&
-            (i2.type() == InstrumentDefinition::FRA || i2.type() == InstrumentDefinition::SWAP)) ||
-                (i1.type() == InstrumentDefinition::FRA && i2.type() == InstrumentDefinition::SWAP))
+        if((lhs.type() == InstrumentDefinition::CASH &&
+            (rhs.type() == InstrumentDefinition::FRA || rhs.type() == InstrumentDefinition::SWAP)) ||
+                (lhs.type() == InstrumentDefinition::FRA && rhs.type() == InstrumentDefinition::SWAP))
             return true;
         else
             return false;
     }
     else
         return timeI1 < timeI2;
-
-    return true;
 }
 
 bool InstrumentDefinitionCompare::operator()(
-        const InstrumentDefinition* pi1,
-        const InstrumentDefinition* pi2) const
+        const InstrumentDefinition* ptrlhs,
+        const InstrumentDefinition* ptrrhs) const
 {
-    return this->operator()(*pi1, *pi2);
+    return this->operator()(*ptrlhs, *ptrrhs);
+}
+//////////////////////////////////////////
+// Definition of InstrumentDefinitionDurationCompare structure
+//////////////////////////////////////////
+bool InstrumentDefinitionDurationCompare::operator()(
+        const InstrumentDefinition& lhs,
+        const Duration& rhs) const
+{
+    int timeI1, timeI2;
+
+    timeI1 = lhs.maturity().getDuration(Duration::DAY);
+    timeI2 = rhs.getDuration(Duration::DAY);
+
+    if(timeI1 == timeI2)
+        return false;
+    else
+        return timeI1 < timeI2;
+}
+
+bool InstrumentDefinitionDurationCompare::operator()(
+        const InstrumentDefinition *ptrlhs,
+        const Duration *ptrrhs) const
+{
+    return this->operator()(
+            *ptrlhs, *ptrrhs);
+}
+bool InstrumentDefinitionDurationCompare::operator()(
+        const Duration& lhs,
+        const InstrumentDefinition& rhs) const
+{
+    return !(this->operator()(rhs, lhs));
+}
+
+bool InstrumentDefinitionDurationCompare::operator()(
+        const Duration *ptrrhs,
+        const InstrumentDefinition *ptrlhs) const
+{
+    return !(this->operator()(*ptrrhs, *ptrlhs));
 }
 
 //////////////////////////////////////////

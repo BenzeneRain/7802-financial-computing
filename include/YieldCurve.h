@@ -14,16 +14,20 @@ class InstrumentValues; // Forwaed Declaration of InstrumentValues class in "Ins
 
 typedef std::pair<Date, double> CurveDataType;
 
-class YieldCurve
+class YieldCurveInstance;
+
+class YieldCurveDefinition
 {
     public:
-        explicit YieldCurve(std::vector<InstrumentDefinition *>& instrDefs, double compoundFreq);
-        ~YieldCurve();
+        YieldCurveDefinition(std::vector<InstrumentDefinition *>& instrDefs, double compoundFreq);
+        ~YieldCurveDefinition();
 
         // Section about Instrument Definitions
 
         // Section about Instrument Values
-        InstrumentValues* bindData(InstrumentValues *instrVals);
+        enum CURVETYPE {ZEROCOUPONRATE};
+        YieldCurveInstance* bindData(InstrumentValues *instrVals,
+                YieldCurveDefinition::CURVETYPE type);
 
         // Section about Curve Data
         virtual void updateCurve() = 0;
@@ -59,11 +63,26 @@ class YieldCurve
 
 };
 
-class ZeroCouponRateCurve:
-    public YieldCurve
+class YieldCurveInstance
 {
     public:
-        ZeroCouponRateCurve(std::vector<InstrumentDefinition *>& instrDefs, double compoundFreq);
+        ~YieldCurveInstance(){};
+
+        friend YieldCurveInstance* YieldCurveDefinition::bindData(
+                InstrumentValues*,
+                YieldCurveDefinition::CURVETYPE);
+    protected:
+        YieldCurveInstance(double compoundFreq):
+            _compoundFreq(compoundFreq){};
+
+        double _compoundFreq;
+};
+
+class ZeroCouponRateCurve:
+    public YieldCurveInstance
+{
+    public:
+        ZeroCouponRateCurve(double compoundFreq);
         ~ZeroCouponRateCurve();
 
         // Section about Instrument Definitions
@@ -72,7 +91,7 @@ class ZeroCouponRateCurve:
 
         // Section about Curve Data
         
-        virtual void updateCurve();
+       // virtual void updateCurve();
 
     private:
         // Section about Curve Data

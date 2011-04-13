@@ -9,9 +9,9 @@
 
 
 //////////////////////////////////////////
-// Definition of the class YieldCurve
+// Definition of the class YieldCurveDefinition
 //////////////////////////////////////////
-YieldCurve::YieldCurve(std::vector<InstrumentDefinition *>& instrDefs, double compoundFreq):
+YieldCurveDefinition::YieldCurveDefinition(std::vector<InstrumentDefinition *>& instrDefs, double compoundFreq):
     _compoundFreq(compoundFreq)
 {
     _instrValues = NULL;
@@ -34,14 +34,19 @@ YieldCurve::YieldCurve(std::vector<InstrumentDefinition *>& instrDefs, double co
         _instrDefIndicesMap[_instrDefs[i]->index()] = i;    
 }
 
-YieldCurve::~YieldCurve()
+YieldCurveDefinition::~YieldCurveDefinition()
 {
 }
 
-void YieldCurve::_insertFakeInstrumentDefs()
+void YieldCurveDefinition::_insertFakeInstrumentDefs()
 {
     std::vector<InstrumentDefinition *>::iterator iterCurr =
         _instrDefs.begin();
+
+    std::vector<InstrumentDefinition *>::iterator iterBegin =
+        _instrDefs.begin();
+    std::vector<InstrumentDefinition *>::iterator iterEnd =
+        _instrDefs.end();
 
     iterCurr ++;
 
@@ -59,15 +64,45 @@ void YieldCurve::_insertFakeInstrumentDefs()
                 break;
             case InstrumentDefinition::FRA:
                 {
+                    // We need the df of the start Date
                     Duration startDuration(
                             dynamic_cast<FRAInstrDefinition&>
                             (currInstrDef).startDuration()
                             );
-                    // We need the df of the start Date
+                    
+                    std::pair<std::vector<InstrumentDefinition *>::iterator, 
+                        std::vector<InstrumentDefinition*>::iterator> result;
+
+                    // FIX: If this does not work, then
+                    // Allocate the Fake Instrument Definition
+                    // using the startDuration first,
+                    // and then use InstrumentDefinitionCompare()
+                    // as the comparator
+                    result = std::equal_range(iterBegin, iterEnd,
+                            &startDuration, 
+                            InstrumentDefinitionDurationCompare());
+
+                    // The definition is already there
+                    // So break, no need to interpolate
+                    if(result.first != result.second)
+                        break;
+
+
+                    // If the definition is not found
+                    // Insert this definition
+                    // Mark the index as -1 to indicate
+                    // this is a manually inserted fake
+                    // Instrument Definition
+                    InstrumentDefinition *ptrNewInstrDef = 
+                        new FAKEInstrDefinition(startDuration, -1);
+                    _instrDefs.insert(result.first, ptrNewInstrDef);  
                     break;
                 }
             case InstrumentDefinition::SWAP:
-                break;
+                {
+                    // TODO:
+                    break;
+                }
             default:
                 {
                     std::string errorMessage("Invalid Instrument"
@@ -81,7 +116,9 @@ void YieldCurve::_insertFakeInstrumentDefs()
     }
 }
 
-InstrumentValues* YieldCurve::bindData(InstrumentValues *instrVals)
+YieldCurveInstance* YieldCurveDefinition::bindData(
+        InstrumentValues *instrVals,
+        YieldCurveDefinition::CURVETYPE)
 {
     // Sanity check for the new values
     for(std::vector<std::pair<int, double> >::iterator iter = instrVals->values.begin();
@@ -108,10 +145,11 @@ InstrumentValues* YieldCurve::bindData(InstrumentValues *instrVals)
         _instrValIndicesMap[_instrDefIndicesMap[val.first]] = i;
     }
 
-    return prevInstrValues;
+    //return prevInstrValues;
+    return new YieldCurveInstance(_compoundFreq);
 }
 
-double YieldCurve::operator[](Date& date) const
+double YieldCurveDefinition::operator[](Date& date) const
 {
     std::map<Date, int>::const_iterator iter =
         _curveDataIndicesMap.find(date);
@@ -142,7 +180,7 @@ double YieldCurve::operator[](Date& date) const
     }
 }
 
-int YieldCurve::operator[](Date& date)
+int YieldCurveDefinition::operator[](Date& date)
 {
     std::map<Date, int>::iterator iter =
         _curveDataIndicesMap.find(date);
@@ -161,7 +199,7 @@ int YieldCurve::operator[](Date& date)
     }
 }
 
-void YieldCurve::_insertCurveData(Date& date, double zVal, int instrDefIndex)
+void YieldCurveDefinition::_insertCurveData(Date& date, double zVal, int instrDefIndex)
 {
     // TODO: Before we decide to use this value,
     // we actually need to check if their is another
@@ -175,8 +213,8 @@ void YieldCurve::_insertCurveData(Date& date, double zVal, int instrDefIndex)
 //////////////////////////////////////////
 // Definition of the class ZeroCouponRateCurve
 //////////////////////////////////////////
-ZeroCouponRateCurve::ZeroCouponRateCurve(std::vector<InstrumentDefinition *>& instrDefs, double compoundFreq):
-    YieldCurve(instrDefs, compoundFreq)
+ZeroCouponRateCurve::ZeroCouponRateCurve(double compoundFreq):
+    YieldCurveInstance(compoundFreq)
 {
 }
 
@@ -185,90 +223,90 @@ ZeroCouponRateCurve::~ZeroCouponRateCurve()
 }
 
 
-void ZeroCouponRateCurve::updateCurve()
-{
-    // Remove all the old curve data first
-    std::vector<std::pair<Date, double> >().swap(_curveData);
-    std::map<Date, int>().swap(_curveDataIndicesMap);
-    std::map<Date, int>().swap(_curveDataToInstrDefMap);
-
-    Date today = Date::today(Date::ACT365);
-    
-    // Assumption here is the _instrDefs is ordered
-
-    for(int i = 0; i < (int)_instrDefs.size(); i ++)
-    {
-        if(_instrValIndicesMap.find(i) != _instrValIndicesMap.end())
-        {
-            int valueIndex = _instrValIndicesMap[i];
-            InstrumentDefinition& instrDef = *_instrDefs[i];
-            int deltaT = 0;
-            // TODO: Calculate the point on the curve and insert
-            // into curve data
-
-            // TODO: Handle the instruments with different type
-            // but have the same maturity date
-            switch(instrDef.type())
-            {
-                case InstrumentDefinition::CASH:
-                    {
-                        // TODO: Calculate maturity Date
-                        Date maturityDate = Date::today(Date::ACT365);
-                        // TODO: calculate delta T
-                        double rate = _instrValues->values[valueIndex].second;
-                        double df = 1.0f / (1.0f + rate * deltaT);
-                        double Z = dfToZ(df, deltaT);
-
-                        _insertCurveData(maturityDate, Z, i);
-                        break;
-                    }
-                case InstrumentDefinition::FRA:
-                    {
-                        // TODO: Calculate maturity Date
-                        Date maturityDate = Date::today(Date::ACT365);
-                        // TODO: Calculate start Date
-                        Date startDate = Date::today(Date::ACT365);
-
-                        // TODO: Calcualte delte T between
-                        // start Date and maturity Date
-                        //deltaT = maturityDate - startDate;
-
-                        double rate = _instrValues->values[valueIndex].second;
-                        double dfMaturity;
-                        double Z;
-
-                        // TODO: Calculate the dfStart
-                        double dfStart;
-
-                        dfMaturity = dfStart / (1.0f + rate * deltaT);
-
-                        // TODO: Re-calculate delta T, which is
-                        // now the time between today to the
-                        // maturity date
-
-                        Z = dfToZ(dfMaturity, deltaT);
-
-                        _insertCurveData(maturityDate, Z, i);
-                        break;
-                    }
-                case InstrumentDefinition::SWAP:
-                    {
-                        break;
-                    }
-                default:
-                    {
-                        // TODO: throw error
-                        break;
-                    }
-            }
-        }
-        else
-        {
-            // No data available for this instrument
-            // so just skip it.
-        }
-    }
-}
+//void ZeroCouponRateCurve::updateCurve()
+//{
+//    // Remove all the old curve data first
+//    std::vector<std::pair<Date, double> >().swap(_curveData);
+//    std::map<Date, int>().swap(_curveDataIndicesMap);
+//    std::map<Date, int>().swap(_curveDataToInstrDefMap);
+//
+//    Date today = Date::today(Date::ACT365);
+//    
+//    // Assumption here is the _instrDefs is ordered
+//
+//    for(int i = 0; i < (int)_instrDefs.size(); i ++)
+//    {
+//        if(_instrValIndicesMap.find(i) != _instrValIndicesMap.end())
+//        {
+//            int valueIndex = _instrValIndicesMap[i];
+//            InstrumentDefinition& instrDef = *_instrDefs[i];
+//            int deltaT = 0;
+//            // TODO: Calculate the point on the curve and insert
+//            // into curve data
+//
+//            // TODO: Handle the instruments with different type
+//            // but have the same maturity date
+//            switch(instrDef.type())
+//            {
+//                case InstrumentDefinition::CASH:
+//                    {
+//                        // TODO: Calculate maturity Date
+//                        Date maturityDate = Date::today(Date::ACT365);
+//                        // TODO: calculate delta T
+//                        double rate = _instrValues->values[valueIndex].second;
+//                        double df = 1.0f / (1.0f + rate * deltaT);
+//                        double Z = dfToZ(df, deltaT);
+//
+//                        _insertCurveData(maturityDate, Z, i);
+//                        break;
+//                    }
+//                case InstrumentDefinition::FRA:
+//                    {
+//                        // TODO: Calculate maturity Date
+//                        Date maturityDate = Date::today(Date::ACT365);
+//                        // TODO: Calculate start Date
+//                        Date startDate = Date::today(Date::ACT365);
+//
+//                        // TODO: Calcualte delte T between
+//                        // start Date and maturity Date
+//                        //deltaT = maturityDate - startDate;
+//
+//                        double rate = _instrValues->values[valueIndex].second;
+//                        double dfMaturity;
+//                        double Z;
+//
+//                        // TODO: Calculate the dfStart
+//                        double dfStart;
+//
+//                        dfMaturity = dfStart / (1.0f + rate * deltaT);
+//
+//                        // TODO: Re-calculate delta T, which is
+//                        // now the time between today to the
+//                        // maturity date
+//
+//                        Z = dfToZ(dfMaturity, deltaT);
+//
+//                        _insertCurveData(maturityDate, Z, i);
+//                        break;
+//                    }
+//                case InstrumentDefinition::SWAP:
+//                    {
+//                        break;
+//                    }
+//                default:
+//                    {
+//                        // TODO: throw error
+//                        break;
+//                    }
+//            }
+//        }
+//        else
+//        {
+//            // No data available for this instrument
+//            // so just skip it.
+//        }
+//    }
+//}
 
 ////////////////////////////////////////////
 //// Definition of the class YieldCurveException

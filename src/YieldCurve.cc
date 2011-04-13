@@ -14,7 +14,6 @@
 YieldCurveDefinition::YieldCurveDefinition(std::vector<InstrumentDefinition *>& instrDefs, double compoundFreq):
     _compoundFreq(compoundFreq)
 {
-    _instrValues = NULL;
     _instrDefs = instrDefs;
     
     // TODO: check if there are at least two instrument 
@@ -118,7 +117,7 @@ void YieldCurveDefinition::_insertFakeInstrumentDefs()
 
 YieldCurveInstance* YieldCurveDefinition::bindData(
         InstrumentValues *instrVals,
-        YieldCurveDefinition::CURVETYPE)
+        YieldCurveDefinition::CURVETYPE type)
 {
     // Sanity check for the new values
     for(std::vector<std::pair<int, double> >::iterator iter = instrVals->values.begin();
@@ -134,193 +133,191 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
         }
     }
 
-    std::map<int, int>().swap(_instrValIndicesMap);
-    InstrumentValues* prevInstrValues = _instrValues;
-    _instrValues = instrVals;
+    // TODO: We also need to make sure there are at least
+    // two values, and one is O/N
 
-    for(int i = 0; i < (int)_instrValues->values.size(); i ++)
+    // Allocate new Yield Curve Instance
+    YieldCurveInstance *ptrNewInstance = NULL;
+    switch(type)
     {
-        std::pair<int, double>& val = _instrValues->values[i];
+        case YieldCurveDefinition::ZEROCOUPONRATE:
+            ptrNewInstance = new ZeroCouponRateCurve(_compoundFreq);
+            break;
+        default:
+            {
+                std::string errorMessage("Invalid Yield Curve"
+                        " Instance Type");
+                throw YieldCurveException(errorMessage);
+            }
+    }
+
+
+    // map from the vector index of the instrument definition
+    // to the instrument value index
+    std::map<int, int> instrValIndicesMap;
+
+    // last instrument definition that has value
+    int lastInstrDefID = -1;
+
+    for(int i = 0; i < (int)instrVals->values.size(); i ++)
+    {
+        std::pair<int, double>& val = instrVals->values[i];
         
-        _instrValIndicesMap[_instrDefIndicesMap[val.first]] = i;
+        instrValIndicesMap[_instrDefIndicesMap[val.first]] = i;
+        if(_instrDefIndicesMap[val.first] > lastInstrDefID)
+            lastInstrDefID = _instrDefIndicesMap[val.first];
     }
 
-    //return prevInstrValues;
-    return new YieldCurveInstance(_compoundFreq);
+    // TODO: lastInstrDefID should never be -1, but may be we need to
+    // implement a check later
+
+
+    // TODO: Un-optimized brute force loop
+    // Loop start
+    Date today = Date::today(Date::ACT365);
+    for(int i = 0; i < lastInstrDefID; i ++)
+    {
+        InstrumentDefinition& instrDef = *_instrDefs[i];
+        double df;
+        double deltaT;
+
+        std::map<int, int>::iterator iter;
+        // If the definition has possible value
+        if((iter = instrValIndicesMap.find(i)) !=
+                instrValIndicesMap.end())
+        {
+            Date maturityDate = today + instrDef.maturity();
+            double compRate = instrVals->values[(*iter).second].second;
+            
+            switch(instrDef.type())
+            {
+                case InstrumentDefinition::CASH:
+                    {
+                        deltaT = normDiffDate(today, maturityDate,
+                                Date::ACT365);
+                        df = 1.0f / (1.0f + compRate * deltaT);
+                        break;
+                    }
+                case InstrumentDefinition::FRA:
+                    {
+                        Duration startDuration = 
+                            dynamic_cast<FRAInstrDefinition&>(instrDef).startDuration();
+                        Date startDate = today + startDuration;
+
+                        deltaT = normDiffDate(startDate, maturityDate,
+                                Date::ACT365);
+
+                        double dfStart = ptrNewInstance->getDf(startDate);
+                        df = dfStart / (1.0f + compRate * deltaT);
+                        break;
+                    }
+                case InstrumentDefinition::SWAP:
+                    {
+                        break;
+                    }
+                default:
+                    // TODO: Throw switch unreachable error
+                    break;
+            }
+
+            CurvePoint_t point(maturityDate, df, deltaT);
+            ptrNewInstance->insert(point);
+        }
+        else
+        {
+        }
+    }
+
+    return ptrNewInstance;
 }
 
-double YieldCurveDefinition::operator[](Date& date) const
+//double YieldCurveDefinition::operator[](Date& date) const
+//{
+//    std::map<Date, int>::const_iterator iter =
+//        _curveDataIndicesMap.find(date);
+//
+//    if(iter == _curveDataIndicesMap.end())
+//    {
+//        // Use linear interpolation to 
+//        // calculate the value
+//        CurveDataType fakeData(date, 0.0);
+//
+//        std::vector<CurveDataType>::const_iterator low, high;
+//
+//        low = std::upper_bound(
+//                _curveData.begin(), _curveData.end(),
+//                fakeData, CurveDataCompare());
+//        high = std::lower_bound(
+//                _curveData.begin(), _curveData.end(),
+//                fakeData, CurveDataCompare());
+//
+//        double zVal = Interpolation::linearInterpolation
+//            (*low, *high, (const Date&)date);
+//
+//        return zVal;
+//    }
+//    else
+//    {
+//        return _curveData[iter->second].second;
+//    }
+//}
+
+//int YieldCurveDefinition::operator[](Date& date)
+//{
+//    std::map<Date, int>::iterator iter =
+//        _curveDataIndicesMap.find(date);
+//
+//    if(iter == _curveDataIndicesMap.end())
+//    {
+//        _curveData.push_back(std::pair<Date, double>(Date(date), 0));
+//        int index = (int)_curveData.size() - 1;
+//        _curveDataIndicesMap[date] = index; 
+//
+//        return index;
+//    }
+//    else
+//    {
+//        return iter->second;
+//    }
+//}
+
+//void YieldCurveDefinition::_insertCurveData(Date& date, double zVal, int instrDefIndex)
+//{
+//    // TODO: Before we decide to use this value,
+//    // we actually need to check if their is another
+//    // definition has the same maturity Date
+//
+//    unsigned int index = (*this)[date];
+//    _curveData[index].second = zVal;
+//    _curveDataToInstrDefMap[date] = instrDefIndex;
+//
+//}
+//////////////////////////////////////////
+// Definition of the class YieldCurveInstance
+//////////////////////////////////////////
+void YieldCurveInstance::insert(CurvePointDesc& data)
 {
-    std::map<Date, int>::const_iterator iter =
-        _curveDataIndicesMap.find(date);
-
-    if(iter == _curveDataIndicesMap.end())
-    {
-        // Use linear interpolation to 
-        // calculate the value
-        CurveDataType fakeData(date, 0.0);
-
-        std::vector<CurveDataType>::const_iterator low, high;
-
-        low = std::upper_bound(
-                _curveData.begin(), _curveData.end(),
-                fakeData, CurveDataCompare());
-        high = std::lower_bound(
-                _curveData.begin(), _curveData.end(),
-                fakeData, CurveDataCompare());
-
-        double zVal = Interpolation::linearInterpolation
-            (*low, *high, (const Date&)date);
-
-        return zVal;
-    }
-    else
-    {
-        return _curveData[iter->second].second;
-    }
 }
 
-int YieldCurveDefinition::operator[](Date& date)
+double YieldCurveInstance::operator[](Date& date)
 {
-    std::map<Date, int>::iterator iter =
-        _curveDataIndicesMap.find(date);
-
-    if(iter == _curveDataIndicesMap.end())
-    {
-        _curveData.push_back(std::pair<Date, double>(Date(date), 0));
-        int index = (int)_curveData.size() - 1;
-        _curveDataIndicesMap[date] = index; 
-
-        return index;
-    }
-    else
-    {
-        return iter->second;
-    }
+    return 0.0;
 }
 
-void YieldCurveDefinition::_insertCurveData(Date& date, double zVal, int instrDefIndex)
+double YieldCurveInstance::getDf(Date& date)
 {
-    // TODO: Before we decide to use this value,
-    // we actually need to check if their is another
-    // definition has the same maturity Date
-
-    unsigned int index = (*this)[date];
-    _curveData[index].second = zVal;
-    _curveDataToInstrDefMap[date] = instrDefIndex;
-
+    double deltaT = 0;
+    return _convertSpecificToDf(this->operator[](date), deltaT);
 }
+
 //////////////////////////////////////////
 // Definition of the class ZeroCouponRateCurve
 //////////////////////////////////////////
 ZeroCouponRateCurve::ZeroCouponRateCurve(double compoundFreq):
-    YieldCurveInstance(compoundFreq)
+    _compoundFreq(compoundFreq)
 {
 }
 
 ZeroCouponRateCurve::~ZeroCouponRateCurve()
 {
 }
-
-
-//void ZeroCouponRateCurve::updateCurve()
-//{
-//    // Remove all the old curve data first
-//    std::vector<std::pair<Date, double> >().swap(_curveData);
-//    std::map<Date, int>().swap(_curveDataIndicesMap);
-//    std::map<Date, int>().swap(_curveDataToInstrDefMap);
-//
-//    Date today = Date::today(Date::ACT365);
-//    
-//    // Assumption here is the _instrDefs is ordered
-//
-//    for(int i = 0; i < (int)_instrDefs.size(); i ++)
-//    {
-//        if(_instrValIndicesMap.find(i) != _instrValIndicesMap.end())
-//        {
-//            int valueIndex = _instrValIndicesMap[i];
-//            InstrumentDefinition& instrDef = *_instrDefs[i];
-//            int deltaT = 0;
-//            // TODO: Calculate the point on the curve and insert
-//            // into curve data
-//
-//            // TODO: Handle the instruments with different type
-//            // but have the same maturity date
-//            switch(instrDef.type())
-//            {
-//                case InstrumentDefinition::CASH:
-//                    {
-//                        // TODO: Calculate maturity Date
-//                        Date maturityDate = Date::today(Date::ACT365);
-//                        // TODO: calculate delta T
-//                        double rate = _instrValues->values[valueIndex].second;
-//                        double df = 1.0f / (1.0f + rate * deltaT);
-//                        double Z = dfToZ(df, deltaT);
-//
-//                        _insertCurveData(maturityDate, Z, i);
-//                        break;
-//                    }
-//                case InstrumentDefinition::FRA:
-//                    {
-//                        // TODO: Calculate maturity Date
-//                        Date maturityDate = Date::today(Date::ACT365);
-//                        // TODO: Calculate start Date
-//                        Date startDate = Date::today(Date::ACT365);
-//
-//                        // TODO: Calcualte delte T between
-//                        // start Date and maturity Date
-//                        //deltaT = maturityDate - startDate;
-//
-//                        double rate = _instrValues->values[valueIndex].second;
-//                        double dfMaturity;
-//                        double Z;
-//
-//                        // TODO: Calculate the dfStart
-//                        double dfStart;
-//
-//                        dfMaturity = dfStart / (1.0f + rate * deltaT);
-//
-//                        // TODO: Re-calculate delta T, which is
-//                        // now the time between today to the
-//                        // maturity date
-//
-//                        Z = dfToZ(dfMaturity, deltaT);
-//
-//                        _insertCurveData(maturityDate, Z, i);
-//                        break;
-//                    }
-//                case InstrumentDefinition::SWAP:
-//                    {
-//                        break;
-//                    }
-//                default:
-//                    {
-//                        // TODO: throw error
-//                        break;
-//                    }
-//            }
-//        }
-//        else
-//        {
-//            // No data available for this instrument
-//            // so just skip it.
-//        }
-//    }
-//}
-
-////////////////////////////////////////////
-//// Definition of the class YieldCurveException
-////////////////////////////////////////////
-YieldCurveException::~YieldCurveException()
-{
-}
-
-////////////////////////////////////////////
-//// Definition of the struct CurveDataCompare
-////////////////////////////////////////////
-bool CurveDataCompare::operator()(const CurveDataType& lhs, const CurveDataType& rhs) const
-{
-    return lhs.first < rhs.first;
-}
-
-

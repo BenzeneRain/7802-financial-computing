@@ -70,6 +70,10 @@ class Date
         boost::gregorian::date _date;
 };
 
+// Calculate normlized difference of the date
+// according to given Date time standard
+double normDiffDate(Date&, Date&, Date::TYPE);
+
 class DateException : public std::runtime_error
 {
     public:

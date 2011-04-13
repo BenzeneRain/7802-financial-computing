@@ -3,6 +3,7 @@
 
 #include <string>
 #include <functional>
+#include <stdexcept>
 
 #include "Date.h"
 
@@ -128,15 +129,10 @@ class InstrumentValues
 };
 
 
-class InstrumentException
+class InstrumentException : public std::runtime_error
 {
     public:
-        InstrumentException(std::string& errorStr);
-        ~InstrumentException();
-
-
-        inline std::string message(){return _errorMessage;}
-    private:
-        std::string _errorMessage;
+        InstrumentException(std::string& errorStr):
+            std::runtime_error(errorStr){};
 };
 #endif // _INCLUDE_INSTRUMENT_H_

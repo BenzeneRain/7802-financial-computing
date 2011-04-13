@@ -271,14 +271,3 @@ bool InstrumentDefinitionDurationCompare::operator()(
     return !(this->operator()(*ptrrhs, *ptrlhs));
 }
 
-//////////////////////////////////////////
-// Definition of InstrumentException class
-//////////////////////////////////////////
-InstrumentException::InstrumentException(std::string& str):
-    _errorMessage(str)
-{
-}
-
-InstrumentException::~InstrumentException()
-{
-}

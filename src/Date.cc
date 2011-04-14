@@ -319,3 +319,15 @@ Duration Duration::operator/(double rhs) const
     return newDuration;
 }
 
+double Duration::operator/(Duration& rhs) const
+{
+    return 0.0;
+}
+
+Duration Duration::operator*(double rhs) const
+{
+    Duration newDuration(this->getDuration(this->type()) * rhs,
+            this->type());
+
+    return newDuration;
+}

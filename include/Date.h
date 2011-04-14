@@ -31,7 +31,8 @@ class Duration
         
         
         Duration operator/(double rhs) const;
-        
+        double operator/(Duration& rhs) const;
+        Duration operator*(double rhs) const;
     private:
         Duration::TYPE _type;
         double _duration;

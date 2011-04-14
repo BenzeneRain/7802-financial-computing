@@ -1,6 +1,7 @@
 #include <sstream>
 #include <string>
 #include <algorithm>
+#include <cmath>
 
 #include "YieldCurve.h"
 #include "Instrument.h"
@@ -69,14 +70,15 @@ void YieldCurveDefinition::_insertFakeInstrumentDefs()
                             (currInstrDef).startDuration()
                             );
                     
-                    std::pair<std::vector<InstrumentDefinition *>::iterator, 
-                        std::vector<InstrumentDefinition*>::iterator> result;
+                    std::pair<std::vector<InstrumentDefinition *>::iterator, std::vector<InstrumentDefinition*>::iterator> result;
 
                     // FIX: If this does not work, then
                     // Allocate the Fake Instrument Definition
                     // using the startDuration first,
                     // and then use InstrumentDefinitionCompare()
                     // as the comparator
+                    // FIX: actually the upper bound can be 
+                    // the current iterator instead of iterEnd
                     result = std::equal_range(iterBegin, iterEnd,
                             &startDuration, 
                             InstrumentDefinitionDurationCompare());
@@ -99,7 +101,34 @@ void YieldCurveDefinition::_insertFakeInstrumentDefs()
                 }
             case InstrumentDefinition::SWAP:
                 {
-                    // TODO:
+                    Duration maturityDuration(currInstrDef.maturity());
+                    Duration deltaDuration(_compoundFreq,
+                            Duration::YEAR);
+
+                    // TODO: Add check that
+                    // deltaDuration should be able to divide the 
+                    // maturityDuration exactly
+
+                    // Check all the necessary instrument, and
+                    // add if there is no cooresponding definition
+                    int n = floor(maturityDuration / deltaDuration);
+                    for(int i = 1; i < n; i ++)
+                    {
+                        Duration currDuration = deltaDuration * i;
+
+                        std::pair<std::vector<InstrumentDefinition *>::iterator, std::vector<InstrumentDefinition *>::iterator> result;
+
+                        result = std::equal_range(iterBegin, iterEnd,
+                                &currDuration,
+                                InstrumentDefinitionDurationCompare());
+
+                        if(result.first != result.second)
+                            break;
+
+                        InstrumentDefinition *ptrNewInstrDef = 
+                            new FAKEInstrDefinition(currDuration, -1);
+                        _instrDefs.insert(result.first, ptrNewInstrDef);
+                    }
                     break;
                 }
             default:

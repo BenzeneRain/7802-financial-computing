@@ -180,7 +180,6 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
             }
     }
 
-
     // map from the vector index of the instrument definition
     // to the instrument value index
     std::map<int, int> instrValIndicesMap;
@@ -209,6 +208,7 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
         InstrumentDefinition& instrDef = *_instrDefs[i];
         double df;
         double deltaT;
+        double deltaTToMaturity;
 
         std::map<int, int>::iterator iter;
         // If the definition has possible value
@@ -224,6 +224,8 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
                     {
                         deltaT = normDiffDate(today, maturityDate,
                                 Date::ACT365);
+                        deltaTToMaturity = deltaT;
+
                         df = 1.0f / (1.0f + compRate * deltaT);
                         break;
                     }
@@ -235,6 +237,8 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
 
                         deltaT = normDiffDate(startDate, maturityDate,
                                 Date::ACT365);
+                        deltaTToMaturity = normDiffDate(today, maturityDate,
+                                Date::ACT365);
 
                         double dfStart = ptrNewInstance->getDf(startDate);
                         df = dfStart / (1.0f + compRate * deltaT);
@@ -242,6 +246,36 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
                     }
                 case InstrumentDefinition::SWAP:
                     {
+                        Duration maturityDuration(instrDef.maturity());
+                        Duration deltaDuration(_compoundFreq,
+                                Duration::YEAR);
+
+                        Date prevDate = today;
+                        double sumDeltaTxDf = 0.0; 
+                        int n = floor(maturityDuration / deltaDuration);
+                        for(int i = 1; i <= n; i ++)
+                        {
+                            Duration currDuration = deltaDuration * i;
+                            Date currDate = today + currDuration;
+
+                            deltaT = normDiffDate(prevDate, currDate,
+                                    Date::ACT365);
+
+                            if(i >= n)
+                                break;
+                            
+                            df = ptrNewInstance->getDf(currDate);
+                            sumDeltaTxDf += deltaT * df;
+
+                            prevDate = currDate;
+                        }
+
+                        df = (1.0 - compRate * sumDeltaTxDf) / 
+                             (1.0 + compRate * deltaT);
+
+                        deltaTToMaturity = normDiffDate(today, maturityDate,
+                                Date::ACT365);
+                        
                         break;
                     }
                 default:
@@ -249,7 +283,7 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
                     break;
             }
 
-            CurvePoint_t point(maturityDate, df, deltaT);
+            CurvePoint_t point(maturityDate, df, deltaTToMaturity);
             ptrNewInstance->insert(point);
         }
         else
@@ -260,67 +294,6 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
     return ptrNewInstance;
 }
 
-//double YieldCurveDefinition::operator[](Date& date) const
-//{
-//    std::map<Date, int>::const_iterator iter =
-//        _curveDataIndicesMap.find(date);
-//
-//    if(iter == _curveDataIndicesMap.end())
-//    {
-//        // Use linear interpolation to 
-//        // calculate the value
-//        CurveDataType fakeData(date, 0.0);
-//
-//        std::vector<CurveDataType>::const_iterator low, high;
-//
-//        low = std::upper_bound(
-//                _curveData.begin(), _curveData.end(),
-//                fakeData, CurveDataCompare());
-//        high = std::lower_bound(
-//                _curveData.begin(), _curveData.end(),
-//                fakeData, CurveDataCompare());
-//
-//        double zVal = Interpolation::linearInterpolation
-//            (*low, *high, (const Date&)date);
-//
-//        return zVal;
-//    }
-//    else
-//    {
-//        return _curveData[iter->second].second;
-//    }
-//}
-
-//int YieldCurveDefinition::operator[](Date& date)
-//{
-//    std::map<Date, int>::iterator iter =
-//        _curveDataIndicesMap.find(date);
-//
-//    if(iter == _curveDataIndicesMap.end())
-//    {
-//        _curveData.push_back(std::pair<Date, double>(Date(date), 0));
-//        int index = (int)_curveData.size() - 1;
-//        _curveDataIndicesMap[date] = index; 
-//
-//        return index;
-//    }
-//    else
-//    {
-//        return iter->second;
-//    }
-//}
-
-//void YieldCurveDefinition::_insertCurveData(Date& date, double zVal, int instrDefIndex)
-//{
-//    // TODO: Before we decide to use this value,
-//    // we actually need to check if their is another
-//    // definition has the same maturity Date
-//
-//    unsigned int index = (*this)[date];
-//    _curveData[index].second = zVal;
-//    _curveDataToInstrDefMap[date] = instrDefIndex;
-//
-//}
 //////////////////////////////////////////
 // Definition of the class YieldCurveInstance
 //////////////////////////////////////////

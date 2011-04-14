@@ -23,6 +23,19 @@ struct Interpolation
             (p2.second - p1.second) / p2ToP1.getDuration(Duration::DAY);
     }
 
+    static inline double
+    linearInterpolation(
+            const Date& p1Date, double p1Val,
+            const Date& p2Date, double p2Val,
+            const Date& xVal)
+    {
+        Duration xToP1 = xVal - p1Date;
+        Duration p2ToP1 = p2Date - p1Date;
+
+        return xToP1.getDuration(Duration::DAY) *
+            (p2Val - p1Val) / p2ToP1.getDuration(Duration::DAY);
+    }
+
     template<class XAXIS, class YAXIS> static inline
     YAXIS linearInterpolation(
             const std::pair<XAXIS, YAXIS>& p1,

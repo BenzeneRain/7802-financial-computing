@@ -68,6 +68,9 @@ class Date
         bool operator<(const Date& rhs) const;
         bool operator==(const Date& rhs) const;
 
+        inline boost::gregorian::date get() const
+            {return _date;}
+
     protected:
         boost::gregorian::date _date;
 };

@@ -1,8 +1,25 @@
 #include <string>
 #include <iostream>
+#include <time.h>
 
 #include "gtest/gtest.h"
 #include "Date.h"
+
+
+class DateTest : public testing::Test
+{
+    protected:
+        static void SetUpTestCase()
+        {
+            std::cout << "-------- Start Testing Date Class --------" << std::endl;
+        }
+
+        static void TearDownTestCase()
+        {
+            std::cout << "-------- Finish Testing Date Class --------"
+                << std::endl << std::endl;
+        }
+};
 
 class DurationTest : public testing::Test
 {
@@ -18,6 +35,97 @@ class DurationTest : public testing::Test
                 << std::endl << std::endl;
         }
 };
+
+class MiscTest : public testing::Test
+{
+    protected:
+        static void SetUpTestCase()
+        {
+            std::cout << "-------- Start Testing miscellaneous date non-member functions --------" << std::endl;
+        }
+
+        static void TearDownTestCase()
+        {
+            std::cout << "-------- Finish Testing miscellaneous date non-member functions --------"
+                << std::endl << std::endl;
+        }
+};
+
+TEST_F(DateTest, DateConstruction)
+{
+    Date todayDateTest = Date::today();
+    boost::gregorian::date todayTest = todayDateTest.get();
+
+    time_t rawTime;
+    time(&rawTime);
+
+    struct tm * timeinfo;
+    struct tm todayStandard;
+
+    timeinfo = localtime(&rawTime);
+    memcpy(&todayStandard, timeinfo, sizeof(struct tm));
+
+    EXPECT_EQ(todayStandard.tm_year + 1900, todayTest.year());
+    EXPECT_EQ(todayStandard.tm_mon + 1, todayTest.month());
+    EXPECT_EQ(todayStandard.tm_mday, todayTest.day());
+
+    Date anotherDate(todayDateTest);
+    todayTest = anotherDate.get();
+
+    EXPECT_EQ(todayStandard.tm_year + 1900, todayTest.year());
+    EXPECT_EQ(todayStandard.tm_mon + 1, todayTest.month());
+    EXPECT_EQ(todayStandard.tm_mday, todayTest.day());
+}
+
+TEST_F(DateTest, DateArithmetics)
+{
+    boost::gregorian::date testDate1(2003, boost::gregorian::Jan, 31);
+    boost::gregorian::date testDate2(2004, boost::gregorian::Jan, 31);
+    boost::gregorian::date testDate3(2003, boost::gregorian::Feb, 1);
+    boost::gregorian::date testDate4(2003, boost::gregorian::Jan, 30);
+    boost::gregorian::date testDate5(2002, boost::gregorian::Dec, 31);
+
+    Date testDate11(testDate1);
+    Date testDate21(testDate2);
+    Date testDate31(testDate3);
+    Date testDate41(testDate4);
+    Date testDate51(testDate5);
+
+    boost::gregorian::date expectDate11(2003, boost::gregorian::Feb, 28);
+    boost::gregorian::date expectDate12(2003, boost::gregorian::Mar, 28);
+    boost::gregorian::date expectDate13(2003, boost::gregorian::Mar, 31);
+
+    boost::gregorian::date expectDate21(2004, boost::gregorian::Feb, 29);
+    boost::gregorian::date expectDate22(2004, boost::gregorian::Mar, 29);
+    boost::gregorian::date expectDate23(2004, boost::gregorian::Mar, 31);
+
+    Date expectDate111(expectDate11);
+    Date expectDate121(expectDate12);
+    Date expectDate131(expectDate13);
+
+    Date expectDate211(expectDate21);
+    Date expectDate221(expectDate22);
+    Date expectDate231(expectDate23);
+
+    Duration oneMonth(1, Duration::MONTH);
+    Duration twoMonth(2, Duration::MONTH);
+
+    EXPECT_EQ(expectDate111, testDate11 + oneMonth);
+    EXPECT_EQ(expectDate121, testDate11 + oneMonth + oneMonth) <<
+        "Expect " << expectDate121.get() << ", Actual " << (testDate11 + oneMonth + oneMonth).get();
+    EXPECT_EQ(expectDate131, testDate11 + twoMonth);
+
+    EXPECT_EQ(expectDate211, testDate21 + oneMonth);
+    EXPECT_EQ(expectDate221, testDate21 + oneMonth + oneMonth) <<
+        "Expect " << expectDate121.get() << ", Actual " << (testDate21 + oneMonth + oneMonth).get();
+    EXPECT_EQ(expectDate231, testDate21 + twoMonth);
+
+    EXPECT_LT(testDate11, testDate21);
+    EXPECT_LT(testDate11, testDate31);
+    EXPECT_LT(testDate41, testDate11);
+    EXPECT_LT(testDate51, testDate11);
+
+}
 
 TEST_F(DurationTest, DurationConstruction)
 {
@@ -301,18 +409,36 @@ TEST_F(DurationTest, isValidDuration)
     EXPECT_FALSE(Duration::isValidDuration(rstr));
 }
 
+TEST_F(MiscTest, NormDiffDate)
+{
+    boost::gregorian::date testDate1(2003, boost::gregorian::Jan, 31);
+    boost::gregorian::date testDate2(2004, boost::gregorian::Jan, 31);
+    boost::gregorian::date testDate3(2003, boost::gregorian::Feb, 1);
+    boost::gregorian::date testDate4(2003, boost::gregorian::Jan, 30);
+    boost::gregorian::date testDate5(2002, boost::gregorian::Dec, 31);
+
+    Date testDate11(testDate1);
+    Date testDate21(testDate2);
+    Date testDate31(testDate3);
+    Date testDate41(testDate4);
+    Date testDate51(testDate5);
+
+    EXPECT_DOUBLE_EQ(1.0, normDiffDate(testDate11, testDate21, Date::ACT365));
+    EXPECT_DOUBLE_EQ(0.00547945205479452054, normDiffDate(testDate31, testDate41, Date::ACT365));
+    EXPECT_DOUBLE_EQ(0.08219178082191780821, normDiffDate(testDate41, testDate51, Date::ACT365));
+}
 
 class CustomedTestEnvironment : public testing::Environment
 {
     public:
         virtual void SetUp()
         {
-            std::cout << "@@@@@@@@ Begin testing Date.cc @@@@@@@@" << std::endl;
+            std::cout << "\t\t\t\t\t@@@@@@@@@@@@@@@@ Begin testing Date.cc @@@@@@@@@@@@@@@@" << std::endl;
         }
 
         virtual void TearDown()
         {
-            std::cout << "@@@@@@@@ Finish testing Date.cc @@@@@@@@"
+            std::cout << "\t\t\t\t\t@@@@@@@@@@@@@@@@ Finish testing Date.cc @@@@@@@@@@@@@@@@"
                 << std::endl << std::endl << std::endl;
         }
 };

@@ -82,33 +82,33 @@ InstrumentDefinition* InstrumentDefinition::parseString(std::string& instrDefStr
 
             // Check if the Unit is provided or not
             static const boost::regex allDigitsFormat("^[[:digit:]]+$");
-            Duration *ptrStartDuration, *ptrMaturity;
+            Duration tStartDuration, tMaturity;
             
             if(boost::regex_match(startDurationStr, allDigitsFormat))
             {
                 double startDurationNum = boost::lexical_cast<double>(startDurationStr);
                 Duration startDuration(startDurationNum, FRAInstrDefinition::defaultDurationType);
-                ptrStartDuration = &startDuration;
+                tStartDuration = startDuration;
             }
             else
             {
                 Duration startDuration(startDurationStr);
-                ptrStartDuration = &startDuration;
+                tStartDuration = startDuration;
             }
 
             if(boost::regex_match(maturityStr, allDigitsFormat))
             {
                 double maturityNum = boost::lexical_cast<double>(maturityStr);
                 Duration maturity(maturityNum, FRAInstrDefinition::defaultDurationType);
-                ptrMaturity = &maturity;
+                tMaturity = maturity;
             }
             else
             {
                 Duration maturity(maturityStr);
-                ptrMaturity = &maturity;
+                tMaturity = maturity;
             }
 
-            InstrumentDefinition *instr = new FRAInstrDefinition(*ptrStartDuration, *ptrMaturity, id);
+            InstrumentDefinition *instr = new FRAInstrDefinition(tStartDuration, tMaturity, id);
             return instr;
         }
         else if(boost::iequals(instrumentType, std::string("SWAP")))

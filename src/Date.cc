@@ -54,7 +54,28 @@ Date Date::operator+(const Duration& rhs) const
                     (int)(rhs.getDuration(Duration::MONTH)));
 
             Date newDay(this->_date + duration);
-            return newDay;
+
+            boost::gregorian::date newRawDay(newDay.get());
+             
+            // Considering the day
+            // in the month, if the resulting day is
+            // larger then the day before add, then
+            // modify the resulting day to the day 
+            // before add
+
+            int diff;
+            if((diff = _date.day() - newRawDay.day()) < 0)
+            {
+                boost::gregorian::date modifiedRawDate =
+                    newRawDay - boost::gregorian::date_duration(-diff);
+                
+                Date modifiedDate(modifiedRawDate);
+                return modifiedDate;
+            }
+            else
+            {
+                return newDay;
+            }
         }
         case Duration::YEAR:
         {
@@ -62,7 +83,26 @@ Date Date::operator+(const Duration& rhs) const
                     (int)(rhs.getDuration(Duration::YEAR)));
 
             Date newDay(this->_date + duration);
-            return newDay;
+
+            boost::gregorian::date newRawDay(newDay.get());
+            // Considering the day
+            // in the month, if the resulting day is
+            // larger then the day before add, then
+            // modify the resulting day to the day 
+            // before add
+            int diff;
+            if((diff = _date.day() - newRawDay.day()) < 0)
+            {
+                boost::gregorian::date modifiedRawDate =
+                    newRawDay - boost::gregorian::date_duration(-diff);
+                
+                Date modifiedDate(modifiedRawDate);
+                return modifiedDate;
+            }
+            else
+            {
+                return newDay;
+            }
         }
         default:
         {

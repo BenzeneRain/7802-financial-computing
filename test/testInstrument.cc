@@ -86,13 +86,13 @@ class CustomedTestEnvironment : public testing::Environment
     public:
         virtual void SetUp()
         {
-            std::cout << "@@@@@@@@ Begin testing Instrument.cc @@@@@@@@" 
+            std::cout << "\t\t\t\t\t@@@@@@@@@@@@@@@@ Begin testing Instrument.cc @@@@@@@@@@@@@@@@" 
                 << std::endl;
         }
 
         virtual void TearDown()
         {
-            std::cout << "@@@@@@@@ Finish testing Instrument.cc @@@@@@@@"
+            std::cout << "\t\t\t\t\t@@@@@@@@@@@@@@@@ Finish testing Instrument.cc @@@@@@@@@@@@@@@@"
                 << std::endl << std::endl << std::endl;
         }
 };

@@ -66,6 +66,7 @@ class Date
         Duration operator-(const Date& rhs) const;
         
         bool operator<(const Date& rhs) const;
+        bool operator==(const Date& rhs) const;
     private:
         TYPE _type;
         boost::gregorian::date _date;

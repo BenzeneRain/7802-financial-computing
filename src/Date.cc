@@ -43,6 +43,11 @@ bool Date::operator<(const Date& rhs) const
     return true;
 }
 
+bool Date::operator==(const Date& rhs) const
+{
+    return _date == rhs._date;
+}
+
 /////////////////////////////////////////
 // Definition of the class Duration
 //////////////////////////////////////////

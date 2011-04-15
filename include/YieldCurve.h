@@ -8,10 +8,11 @@
 #include <functional>
 #include <stdexcept>
 
+#include "Instrument.h"
 class Date; // Forward Declaration of Date class in "Date.h"
 struct DateCompare;
-class InstrumentDefinition; // Forward Declaration of InstrumentDefinition class in "Instrument.h"
-class InstrumentValues; // Forwaed Declaration of InstrumentValues class in "Instrument.h"
+//class InstrumentDefinition; // Forward Declaration of InstrumentDefinition class in "Instrument.h"
+//class InstrumentValues; // Forwaed Declaration of InstrumentValues class in "Instrument.h"
 
 typedef std::pair<Date, double> CurveDataType;
 
@@ -47,18 +48,26 @@ class YieldCurveDefinition
 
 struct CurvePointDesc
 {
-    CurvePointDesc(Date& idate, double idf, double ideltaT):
-        date(idate), df(idf), deltaT(ideltaT){};
+    CurvePointDesc(Date& idate, double ivalue, double ideltaT,
+            enum InstrumentDefinition::TYPE iInstrType):
+        date(idate), value(ivalue), deltaT(ideltaT),
+        instrType(iInstrType){};
 
-    Date& date;
-    double df;
+    bool operator<(const struct CurvePointDesc& rhs) const;
+
+    Date date;
+    double value;
     double deltaT;
+    enum InstrumentDefinition::TYPE instrType;
 };
 typedef struct CurvePointDesc CurvePoint_t;
 
 class YieldCurveInstance
 {
     public:
+        explicit YieldCurveInstance(YieldCurveInstance& rhs);
+        virtual YieldCurveInstance& operator=(YieldCurveInstance& rhs);
+
         virtual ~YieldCurveInstance(){};
 
         // insert the data to the curve
@@ -81,6 +90,7 @@ class YieldCurveInstance
         // Store the Points on the curve
         std::vector<CurvePoint_t> _curveData;
 
+        // FIX: It seems we do not need this
         // map from the Date to the vector index of 
         // _curveDate
         std::map<Date, int> _curveDataIndicesMap;
@@ -94,15 +104,11 @@ class ZeroCouponRateCurve:
                 InstrumentValues*,
                 YieldCurveDefinition::CURVETYPE);
 
+        explicit ZeroCouponRateCurve(ZeroCouponRateCurve& rhs);
+        virtual YieldCurveInstance& operator=(YieldCurveInstance& rhs);
+        ZeroCouponRateCurve& operator=(ZeroCouponRateCurve& rhs);
+
         virtual ~ZeroCouponRateCurve();
-
-        // Section about Instrument Definitions
-
-        // Section about Instrument Values
-
-        // Section about Curve Data
-
-        // virtual void updateCurve();
 
     private:
         ZeroCouponRateCurve(double compoundFreq);

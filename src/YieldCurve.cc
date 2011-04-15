@@ -26,16 +26,23 @@ YieldCurveDefinition::YieldCurveDefinition(std::vector<InstrumentDefinition *>& 
 
     //TODO: Add fake instrument definitions by
     // interpolation
+    _insertFakeInstrumentDefs();
 
     // Build mapping between instrument index to 
     // the instrument definition location in the vector
     std::map<int, int>().swap(_instrDefIndicesMap);
     for(int i = 0; i < (int)_instrDefs.size(); i ++)
-        _instrDefIndicesMap[_instrDefs[i]->index()] = i;    
+    {
+        int index = _instrDefs[i]->index();
+        
+        if(index >= 0)
+            _instrDefIndicesMap[_instrDefs[i]->index()] = i;    
+    }
 }
 
 YieldCurveDefinition::~YieldCurveDefinition()
 {
+    // Remove all the fake instrument
 }
 
 void YieldCurveDefinition::_insertFakeInstrumentDefs()
@@ -319,7 +326,8 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
         }
 
         // Insert the point to the Curve
-        CurvePoint_t point(maturityDate, df, deltaTToMaturity);
+        CurvePoint_t point(maturityDate, df, deltaTToMaturity,
+                instrDef.type());
         ptrNewInstance->insert(point);
     }
 
@@ -329,19 +337,131 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
 //////////////////////////////////////////
 // Definition of the class YieldCurveInstance
 //////////////////////////////////////////
-void YieldCurveInstance::insert(CurvePointDesc& data)
+YieldCurveInstance::YieldCurveInstance(YieldCurveInstance& rhs)
 {
+    *this = this->operator=(rhs);
+}
+
+YieldCurveInstance& YieldCurveInstance::operator=(
+        YieldCurveInstance& rhs)
+{
+    std::vector<CurvePoint_t>(rhs._curveData).swap(_curveData); 
+    std::map<Date, int>(rhs._curveDataIndicesMap).swap(_curveDataIndicesMap);
+    return *this;
+}
+
+void YieldCurveInstance::insert(CurvePoint_t& data)
+{
+    CurvePoint_t newData(data);
+
+    newData.value = _convertDfToSpecific(
+            newData.value, newData.deltaT);
+
+    std::map<Date, int>::iterator iter;
+
+    iter = _curveDataIndicesMap.find(newData.date);
+
+
+    if(iter != _curveDataIndicesMap.end())
+    {
+        int index = (*iter).second;
+        InstrumentDefinition::TYPE iterDataType = 
+            _curveData[index].instrType;
+
+        if(data.instrType == InstrumentDefinition::SWAP ||
+                (data.instrType == InstrumentDefinition::FRA && 
+                 iterDataType != InstrumentDefinition::SWAP) ||
+                (data.instrType == InstrumentDefinition::CASH &&
+                 iterDataType == InstrumentDefinition::CASH))
+        {
+            _curveData[index] = newData;
+        }
+    } 
+    else
+    {
+        std::vector<CurvePoint_t>::iterator ptIter;
+
+        ptIter = upper_bound(_curveData.begin(),
+                _curveData.end(), newData);
+        ptIter = _curveData.insert(ptIter, newData);
+
+        _curveDataIndicesMap[newData.date] = distance(
+                _curveData.begin(), ptIter);
+    }
 }
 
 double YieldCurveInstance::operator[](Date& date)
 {
-    return 0.0;
+    std::pair<std::vector<CurvePoint_t>::iterator,
+        std::vector<CurvePoint_t>::iterator> iterRange;
+
+    CurvePoint_t fakePoint(date, 0, 0, InstrumentDefinition::FAKE);
+
+    iterRange = equal_range(_curveData.begin(),
+            _curveData.end(), fakePoint);
+     
+    int distUD = distance(iterRange.first, iterRange.second);
+    
+    if(distUD == 0)
+    {
+        std::string errorMessage("Cannot get the value on the "
+                "Yield Curve of the giving Date. The date is "
+                "out of the range.");
+
+        throw YieldCurveException(errorMessage);
+    }
+    else
+    {
+        double value;
+        CurvePoint_t lowerElement = *(iterRange.first);
+        CurvePoint_t upperElement = *(iterRange.second);
+
+        value = Interpolation::linearInterpolation(
+                lowerElement.date, lowerElement.value,
+                upperElement.date, upperElement.value,
+                date);
+
+        return value;
+    }
 }
 
 double YieldCurveInstance::getDf(Date& date)
 {
-    double deltaT = 0;
-    return _convertSpecificToDf(this->operator[](date), deltaT);
+    std::pair<std::vector<CurvePoint_t>::iterator,
+        std::vector<CurvePoint_t>::iterator> iterRange;
+
+    CurvePoint_t fakePoint(date, 0, 0, InstrumentDefinition::FAKE);
+
+    iterRange = equal_range(_curveData.begin(),
+            _curveData.end(), fakePoint);
+     
+    int distUD = distance(iterRange.first, iterRange.second);
+    
+    if(distUD == 0)
+    {
+        std::string errorMessage("Cannot get the value on the "
+                "Yield Curve of the giving Date. The date is "
+                "out of the range.");
+
+        throw YieldCurveException(errorMessage);
+    }
+    else
+    {
+        double value;
+        CurvePoint_t lowerElement = *(iterRange.first);
+        CurvePoint_t upperElement = *(iterRange.second);
+
+        value = Interpolation::linearInterpolation(
+                lowerElement.date, lowerElement.value,
+                upperElement.date, upperElement.value,
+                date);
+
+        Date today = Date::today(Date::ACT365);
+        double deltaT = normDiffDate(today, date, Date::ACT365);
+        value = _convertSpecificToDf(value, deltaT);
+
+        return value;
+    }
 }
 
 //////////////////////////////////////////
@@ -352,6 +472,37 @@ ZeroCouponRateCurve::ZeroCouponRateCurve(double compoundFreq):
 {
 }
 
+ZeroCouponRateCurve::ZeroCouponRateCurve(ZeroCouponRateCurve& rhs):
+    YieldCurveInstance(rhs)
+{
+    _compoundFreq = rhs._compoundFreq;
+}
+
 ZeroCouponRateCurve::~ZeroCouponRateCurve()
 {
+}
+
+YieldCurveInstance& ZeroCouponRateCurve::operator=(YieldCurveInstance& rhs)
+{
+    ZeroCouponRateCurve& zrhs = static_cast<ZeroCouponRateCurve&>(rhs);
+    *this = ZeroCouponRateCurve::operator=(zrhs);
+
+    return *this;
+}
+
+ZeroCouponRateCurve& ZeroCouponRateCurve::operator=(ZeroCouponRateCurve& rhs)
+{
+    YieldCurveInstance::operator=(rhs);
+    _compoundFreq = rhs._compoundFreq;
+
+    return *this;
+}
+
+//////////////////////////////////////////
+// Definition of the struct CurvePointDesc
+//////////////////////////////////////////
+
+bool CurvePoint_t::operator<(const CurvePoint_t& rhs) const
+{
+    return (this->date < rhs.date);
 }

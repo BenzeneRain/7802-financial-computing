@@ -50,13 +50,13 @@ class Date
     public:
         enum TYPE {ACT365, ACT365J};
 
-        Date(boost::gregorian::date& date, enum TYPE type);
+        Date(const boost::gregorian::date& date);
         Date(const Date& rdate):
-            _type(rdate._type), _date(rdate._date){};
+            _date(rdate._date){};
 
         ~Date();
 
-        static Date today(Date::TYPE type);
+        static Date today();
 
         // Return the nearest next working day after a given
         // Duration

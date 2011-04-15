@@ -221,7 +221,7 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
     
     // TODO: Un-optimized brute force loop
     // Loop start
-    Date today = Date::today(Date::ACT365);
+    Date today = Date::today();
     for(int i = 0; i <= lastInstrDefID; i ++)
     {
         InstrumentDefinition& instrDef = *_instrDefs[i];
@@ -456,7 +456,7 @@ double YieldCurveInstance::getDf(Date& date)
                 upperElement.date, upperElement.value,
                 date);
 
-        Date today = Date::today(Date::ACT365);
+        Date today = Date::today();
         double deltaT = normDiffDate(today, date, Date::ACT365);
         value = _convertSpecificToDf(value, deltaT);
 

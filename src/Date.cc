@@ -7,8 +7,8 @@
 /////////////////////////////////////////
 // Definition of the class Date
 //////////////////////////////////////////
-Date::Date(boost::gregorian::date& date, enum TYPE type):
-    _type(type), _date(date)
+Date::Date(const boost::gregorian::date& date):
+    _date(date)
 {
 }
 
@@ -16,37 +16,99 @@ Date::~Date()
 {
 }
 
-Date Date::today(Date::TYPE type)
+Date Date::today()
 {
     boost::gregorian::date today = 
         boost::gregorian::day_clock::local_day();
-    Date dateToday(today, type);
+    Date dateToday(today);
     return dateToday;
 }
 
 
 Date Date::operator+(const Duration& rhs) const
 {
-    //TODO:
-    return Date(*this);
+    Duration::TYPE type = rhs.type();
+
+    switch(type)
+    {
+        case Duration::DAY:
+        {
+            boost::gregorian::date_duration duration(
+                    (long)(rhs.getDuration(Duration::DAY)));
+            Date newDay(this->_date + duration);
+            return newDay;
+        }
+        case  Duration::WEEK:
+        {
+            boost::gregorian::weeks duration(
+                    (int)(rhs.getDuration(Duration::WEEK)));
+
+            Date newDay(this->_date + duration);
+            return newDay;
+        }
+        case Duration::MONTH:
+        case Duration::QUARTER:
+        {
+            boost::gregorian::months duration(
+                    (int)(rhs.getDuration(Duration::MONTH)));
+
+            Date newDay(this->_date + duration);
+            return newDay;
+        }
+        case Duration::YEAR:
+        {
+            boost::gregorian::years duration(
+                    (int)(rhs.getDuration(Duration::YEAR)));
+
+            Date newDay(this->_date + duration);
+            return newDay;
+        }
+        default:
+        {
+            std::string errorMessage("Invalid Duration");
+            throw DateException(errorMessage);
+        }
+    }
 }
 
 Duration Date::operator-(const Date& rhs) const
 {
-    //TODO:
-    return Duration();
+    boost::gregorian::date_duration duration = 
+        (*this) < rhs ? rhs._date - this->_date :
+                        this->_date - rhs._date;
+
+    return Duration(duration.days(), Duration::DAY);
 }
 
 bool Date::operator<(const Date& rhs) const
 {
-    // TODO:
-    return true;
+    return _date < rhs._date;
 }
 
 bool Date::operator==(const Date& rhs) const
 {
     return _date == rhs._date;
 }
+
+/////////////////////////////////////////
+// Definition of Date Helper functions
+//////////////////////////////////////////
+double normDiffDate(Date& d1, Date& d2, Date::TYPE type)
+{
+    Duration duration = d1 < d2 ? d2 - d1 : d1 - d2;
+
+    switch(type)
+    {
+        case Date::ACT365:
+                return duration.getDuration(Duration::DAY) / 365.0;
+        default:
+            {
+                std::string errorMessage("Unsupported Date::TYPE");
+                throw DateException(errorMessage);
+            }
+    }
+}
+
 
 /////////////////////////////////////////
 // Definition of the class Duration
@@ -336,3 +398,5 @@ Duration Duration::operator*(double rhs) const
 
     return newDuration;
 }
+
+

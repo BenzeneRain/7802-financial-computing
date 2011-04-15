@@ -4,6 +4,7 @@
 
 #include "Date.h"
 
+
 /////////////////////////////////////////
 // Definition of the class Date
 //////////////////////////////////////////
@@ -400,3 +401,24 @@ Duration Duration::operator*(double rhs) const
 }
 
 
+/////////////////////////////////////////
+// Definition of the class WorkDate
+//////////////////////////////////////////
+WorkDate::WorkDate(const Date& rhs):
+    Date(rhs)
+{
+    _jumpToNearestNextWorkDay();
+}
+
+WorkDate::~WorkDate()
+{
+}
+
+void WorkDate::_jumpToNearestNextWorkDay()
+{
+    using namespace boost::gregorian;
+
+    greg_weekday gw = _date.day_of_week();
+    if(gw == Saturday || gw == Sunday)
+        _date = next_weekday(_date, greg_weekday(Monday));
+}

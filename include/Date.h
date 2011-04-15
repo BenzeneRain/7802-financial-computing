@@ -67,8 +67,8 @@ class Date
         
         bool operator<(const Date& rhs) const;
         bool operator==(const Date& rhs) const;
-    private:
-        TYPE _type;
+
+    protected:
         boost::gregorian::date _date;
 };
 
@@ -81,6 +81,17 @@ class DateException : public std::runtime_error
     public:
         DateException(std::string& e):
             std::runtime_error(e){};
+};
+
+class WorkDate : public Date
+{
+    public:
+        explicit WorkDate(const Date& date);
+
+        ~WorkDate();
+
+    private:
+        void _jumpToNearestNextWorkDay();
 };
 
 #endif // _INCLUDE_DATE_H_ 

@@ -427,7 +427,7 @@ Duration Duration::operator/(double rhs) const
     return newDuration;
 }
 
-double Duration::operator/(Duration& rhs) const
+double Duration::operator/(const Duration& rhs) const
 {
     Duration::TYPE type = this->type();
     return this->getDuration(type) / rhs.getDuration(type);

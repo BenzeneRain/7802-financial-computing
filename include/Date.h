@@ -32,7 +32,7 @@ class Duration
         bool operator==(const Duration& ths) const;
         
         Duration operator/(double rhs) const;
-        double operator/(Duration& rhs) const;
+        double operator/(const Duration& rhs) const;
         Duration operator*(double rhs) const;
     private:
         Duration::TYPE _type;

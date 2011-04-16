@@ -10,7 +10,8 @@
 //////////////////////////////////////////
 // Definition of InstrumentDefinition class
 //////////////////////////////////////////
-InstrumentDefinition::InstrumentDefinition(Duration& maturity, int index):
+InstrumentDefinition::InstrumentDefinition(
+        const Duration& maturity, const int index):
     _maturity(maturity), _index(index)
 {
 }

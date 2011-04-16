@@ -17,7 +17,7 @@ $(TEST_OBJECT_FILES): %:%.cc $(DEP_LIBS)
 	$(CXX) $(CFLAGS) -o $@ $< $(DEP_LIBS)
 
 run: 
-	for testprog in $(TEST_OBJECT_FILES); do sh -c $(CURDIR)/$$testprog; done
+	for testprog in $(TEST_OBJECT_FILES); do sh -c $(CURDIR)/$$testprog; echo "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"; done
 
 clean:
 	$(RM) $(TEST_OBJECT_FILES)

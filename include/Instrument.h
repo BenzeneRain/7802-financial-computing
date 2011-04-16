@@ -25,7 +25,8 @@ class InstrumentDefinition
         virtual std::string subtype() const = 0;
 
     protected:
-        InstrumentDefinition(Duration& maturity, int index);
+        InstrumentDefinition(const Duration& maturity,
+                const int index);
 
         int _index;
         Duration  _maturity;
@@ -66,6 +67,9 @@ class CASHInstrDefinition:
 {
     public:
         CASHInstrDefinition(Duration& maturity, int index);
+        explicit CASHInstrDefinition(const CASHInstrDefinition& rhs):
+            InstrumentDefinition(rhs._maturity, rhs._index){};
+
         ~CASHInstrDefinition();
 
         virtual std::string subtype() const;
@@ -77,6 +81,10 @@ class FRAInstrDefinition:
     public:
         static const Duration::TYPE defaultDurationType;
         FRAInstrDefinition(Duration& startDuration, Duration& maturity, int index);
+        explicit FRAInstrDefinition(const FRAInstrDefinition& rhs):
+            _startDuration(rhs._startDuration), 
+            InstrumentDefinition(rhs){};
+
         ~FRAInstrDefinition();
 
         virtual std::string subtype() const;
@@ -93,6 +101,9 @@ class SWAPInstrDefinition:
 {
     public:
         SWAPInstrDefinition(Duration& maturity, int index);
+        explicit SWAPInstrDefinition(const SWAPInstrDefinition& rhs):
+            InstrumentDefinition(rhs){};
+
         ~SWAPInstrDefinition();
 
         virtual std::string subtype() const;
@@ -110,6 +121,9 @@ class FAKEInstrDefinition:
         {
             _type = InstrumentDefinition::FAKE;
         };
+        explicit FAKEInstrDefinition(const FAKEInstrDefinition& rhs):
+            InstrumentDefinition(rhs){};
+
         ~FAKEInstrDefinition();
 
         virtual std::string subtype() const;

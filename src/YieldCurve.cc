@@ -334,9 +334,67 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
     return ptrNewInstance;
 }
 
+std::vector<InstrumentDefinition *> YieldCurveDefinition::getAllDefinitions() const
+{
+    std::vector<InstrumentDefinition *> allInstrDefs;
+
+    for(int i = 0; i < (int)_instrDefs.size(); i ++)
+    {
+        switch(_instrDefs[i]->type())
+        {
+            case InstrumentDefinition::CASH:
+                {
+                    CASHInstrDefinition* instrDef = 
+                        dynamic_cast<CASHInstrDefinition *>(
+                                _instrDefs[i]);
+
+                    allInstrDefs.push_back(
+                            new CASHInstrDefinition(*instrDef));
+                    break;
+                }
+            case InstrumentDefinition::FRA:
+                {
+                    FRAInstrDefinition* instrDef =
+                        dynamic_cast<FRAInstrDefinition *>(
+                                _instrDefs[i]);
+
+                    allInstrDefs.push_back(
+                            new FRAInstrDefinition(*instrDef));
+                    break;
+                }
+            case InstrumentDefinition::SWAP:
+                {
+                    SWAPInstrDefinition* instrDef =
+                        dynamic_cast<SWAPInstrDefinition *>(
+                                _instrDefs[i]);
+
+                    allInstrDefs.push_back(
+                            new SWAPInstrDefinition(*instrDef));
+                    break;
+                }
+            case InstrumentDefinition::FAKE:
+                {
+                    FAKEInstrDefinition* instrDef = 
+                        dynamic_cast<FAKEInstrDefinition *>(
+                                _instrDefs[i]);
+
+                    allInstrDefs.push_back(
+                            new FAKEInstrDefinition(*instrDef));
+                    break;
+                }
+        }
+    }
+
+    return allInstrDefs;
+}
+
 //////////////////////////////////////////
 // Definition of the class YieldCurveInstance
 //////////////////////////////////////////
+YieldCurveInstance::YieldCurveInstance()
+{
+}
+
 YieldCurveInstance::YieldCurveInstance(YieldCurveInstance& rhs)
 {
     *this = this->operator=(rhs);

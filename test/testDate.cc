@@ -129,6 +129,13 @@ TEST_F(DateTest, DateArithmetics)
 
     // Test Operator -
     EXPECT_EQ(Duration(365.0, Duration::DAY), (testDate11 - testDate21));
+    EXPECT_EQ(Duration(364.0, Duration::DAY), testDate21 - testDate31) <<
+        "Expect " << 364 << " Day, Actual " << 
+        (testDate21 - testDate31).getDuration(Duration::DAY) << " Day";
+    EXPECT_EQ(Duration(2.0, Duration::DAY), testDate41 - testDate31) <<
+        "Expect " << 2 << " Day, Actual " << 
+        (testDate41 - testDate31).getDuration(Duration::DAY) << " Day";
+    EXPECT_EQ(Duration(30.0, Duration::DAY), testDate51 - testDate41);
 }
 
 TEST_F(DurationTest, DurationConstruction)
@@ -432,17 +439,30 @@ TEST_F(MiscTest, NormDiffDate)
     EXPECT_DOUBLE_EQ(0.08219178082191780821, normDiffDate(testDate41, testDate51, Date::ACT365));
 }
 
+TEST_F(DurationTest, DurationArithmetics)
+{
+    Duration oneYear(1, Duration::YEAR);
+    Duration oneMonth(1, Duration::MONTH);
+    Duration oneQuarter(1, Duration::QUARTER);
+
+    EXPECT_DOUBLE_EQ(4.0, (oneYear / 3.0).getDuration(Duration::MONTH));
+    EXPECT_DOUBLE_EQ(12.0, (oneYear / oneMonth));
+    EXPECT_DOUBLE_EQ(4.0, (oneYear / oneQuarter));
+
+    EXPECT_DOUBLE_EQ(2.5, (oneQuarter * 10.0).getDuration(Duration::YEAR));
+}
+
 class CustomedTestEnvironment : public testing::Environment
 {
     public:
         virtual void SetUp()
         {
-            std::cout << "\t\t\t\t\t@@@@@@@@@@@@@@@@ Begin testing Date.cc @@@@@@@@@@@@@@@@" << std::endl;
+            std::cout << "\t\t\t\t\t@@@@@@@@@@@@@@\\/ Begin testing Date.cc \\/@@@@@@@@@@@@@@@" << std::endl;
         }
 
         virtual void TearDown()
         {
-            std::cout << "\t\t\t\t\t@@@@@@@@@@@@@@@@ Finish testing Date.cc @@@@@@@@@@@@@@@@"
+            std::cout << "\t\t\t\t\t@@@@@@@@@@@@@@@/\\ Finish testing Date.cc /\\@@@@@@@@@@@@@@@"
                 << std::endl << std::endl << std::endl;
         }
 };

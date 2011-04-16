@@ -27,6 +27,7 @@ class YieldCurveDefinition
         ~YieldCurveDefinition();
 
         // Section about Instrument Definitions
+        std::vector<InstrumentDefinition *> getAllDefinitions() const;
 
         // Section about Instrument Values
         enum CURVETYPE {ZEROCOUPONRATE};

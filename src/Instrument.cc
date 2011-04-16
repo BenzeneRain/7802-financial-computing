@@ -16,6 +16,13 @@ InstrumentDefinition::InstrumentDefinition(
 {
 }
 
+InstrumentDefinition::InstrumentDefinition(
+        const InstrumentDefinition& rhs):
+    _index(rhs._index), _maturity(rhs._maturity),
+    _type(rhs._type)
+{
+}
+
 InstrumentDefinition::~InstrumentDefinition()
 {
 }

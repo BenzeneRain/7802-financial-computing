@@ -40,15 +40,29 @@ class YieldCurveInstanceTest : public testing::Test
 void testEqualYieldCurveDefinition(InstrumentDefinition::TYPE stype, Duration smaturity,
         int sid, InstrumentDefinition& tInstrDef)
 {
-    EXPECT_EQ(stype, tInstrDef.type()) << "Expect " 
-        << stype << ", Actual " << tInstrDef.type();
+    EXPECT_EQ(stype, tInstrDef.type())
+        << "Standard: " <<
+        sid << ", " << smaturity.toString() << 
+        ", " << stype << std::endl << "Actual: " <<
+        tInstrDef.index() << ", " << 
+        tInstrDef.maturity().toString() << ", " <<
+        tInstrDef.type();
 
-    EXPECT_EQ(smaturity, tInstrDef.maturity()) << "Expect "
-        << smaturity.toString(false, false) << ", Actual" <<
-        tInstrDef.maturity().toString(false, false);
+    EXPECT_EQ(smaturity, tInstrDef.maturity()) 
+        << "Standard: " <<
+        sid << ", " << smaturity.toString() << 
+        ", " << stype << std::endl << "Actual: " <<
+        tInstrDef.index() << ", " << 
+        tInstrDef.maturity().toString() << ", " <<
+        tInstrDef.type();
 
-    EXPECT_EQ(sid, tInstrDef.index()) << "Expect "
-        << sid << ", Actual " << tInstrDef.index();
+    EXPECT_EQ(sid, tInstrDef.index())
+        << "Standard: " <<
+        sid << ", " << smaturity.toString() << 
+        ", " << stype << std::endl << "Actual: " <<
+        tInstrDef.index() << ", " << 
+        tInstrDef.maturity().toString() << ", " <<
+        tInstrDef.type();
 }
 
 TEST_F(YieldCurveDefinitionTest, YieldCurveDefinitionConstruction)
@@ -94,6 +108,24 @@ TEST_F(YieldCurveDefinitionTest, YieldCurveDefinitionConstruction)
 
         testEqualYieldCurveDefinition(InstrumentDefinition::CASH,
                 Duration(3, Duration::MONTH), 7, *gdefs[6]);
+
+        testEqualYieldCurveDefinition(InstrumentDefinition::FRA,
+                Duration(4, Duration::MONTH), 8, *gdefs[7]);
+
+        testEqualYieldCurveDefinition(InstrumentDefinition::FRA,
+                Duration(5, Duration::MONTH), 9, *gdefs[8]);
+
+        testEqualYieldCurveDefinition(InstrumentDefinition::FRA,
+                Duration(6, Duration::MONTH), 10, *gdefs[9]);
+
+        testEqualYieldCurveDefinition(InstrumentDefinition::FRA,
+                Duration(9, Duration::MONTH), 11, *gdefs[10]);
+
+        testEqualYieldCurveDefinition(InstrumentDefinition::SWAP,
+                Duration(1, Duration::YEAR), 12, *gdefs[11]);
+
+        testEqualYieldCurveDefinition(InstrumentDefinition::FAKE,
+                Duration(1.25, Duration::YEAR), -1, *gdefs[12]);
     }
 
     while(!gdefs.empty())

@@ -16,7 +16,10 @@ class InstrumentDefinition
         static InstrumentDefinition* parseString(
                 std::string& instrDefStr);
 
-        enum TYPE {CASH, FRA, SWAP, FAKE};
+        enum TYPE {CASH = 0,
+                   FRA  = 1,
+                   SWAP = 2,
+                   FAKE = 3};
         inline int index() const {return _index;}
 
         inline enum TYPE type() const {return _type;}
@@ -27,6 +30,7 @@ class InstrumentDefinition
     protected:
         InstrumentDefinition(const Duration& maturity,
                 const int index);
+        InstrumentDefinition(const InstrumentDefinition& rhs);
 
         int _index;
         Duration  _maturity;
@@ -68,7 +72,7 @@ class CASHInstrDefinition:
     public:
         CASHInstrDefinition(Duration& maturity, int index);
         explicit CASHInstrDefinition(const CASHInstrDefinition& rhs):
-            InstrumentDefinition(rhs._maturity, rhs._index){};
+            InstrumentDefinition(rhs){};
 
         ~CASHInstrDefinition();
 

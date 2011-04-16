@@ -47,20 +47,16 @@ YieldCurveDefinition::~YieldCurveDefinition()
 
 void YieldCurveDefinition::_insertFakeInstrumentDefs()
 {
+    std::vector<InstrumentDefinition *> instrDefsCopy(_instrDefs);
+
     std::vector<InstrumentDefinition *>::iterator iterCurr =
         _instrDefs.begin();
-
-    std::vector<InstrumentDefinition *>::iterator iterBegin =
-        _instrDefs.begin();
-    std::vector<InstrumentDefinition *>::iterator iterEnd =
-        _instrDefs.end();
 
     iterCurr ++;
 
     while(iterCurr != _instrDefs.end())
     {
-        InstrumentDefinition& currInstrDef =
-            *(static_cast<InstrumentDefinition *>(*iterCurr));
+        InstrumentDefinition& currInstrDef = *(*iterCurr);
 
 
         switch(currInstrDef.type())
@@ -77,18 +73,23 @@ void YieldCurveDefinition::_insertFakeInstrumentDefs()
                             (currInstrDef).startDuration()
                             );
                     
-                    std::pair<std::vector<InstrumentDefinition *>::iterator, std::vector<InstrumentDefinition*>::iterator> result;
+                    std::pair<std::vector<InstrumentDefinition *>::iterator,
+                        std::vector<InstrumentDefinition*>::iterator> result;
 
                     // FIX: If this does not work, then
                     // Allocate the Fake Instrument Definition
                     // using the startDuration first,
                     // and then use InstrumentDefinitionCompare()
                     // as the comparator
+                    InstrumentDefinition *stubInstr = new FAKEInstrDefinition(
+                            startDuration, -1);
+
                     // FIX: actually the upper bound can be 
                     // the current iterator instead of iterEnd
-                    result = std::equal_range(iterBegin, iterEnd,
-                            &startDuration, 
-                            InstrumentDefinitionDurationCompare());
+                    result = std::equal_range(instrDefsCopy.begin(), instrDefsCopy.end(),
+                            stubInstr, InstrumentDefinitionCompare());
+
+                    delete stubInstr;
 
                     // The definition is already there
                     // So break, no need to interpolate
@@ -103,14 +104,13 @@ void YieldCurveDefinition::_insertFakeInstrumentDefs()
                     // Instrument Definition
                     InstrumentDefinition *ptrNewInstrDef = 
                         new FAKEInstrDefinition(startDuration, -1);
-                    _instrDefs.insert(result.first, ptrNewInstrDef);  
+                    instrDefsCopy.insert(result.first, ptrNewInstrDef);  
                     break;
                 }
             case InstrumentDefinition::SWAP:
                 {
                     Duration maturityDuration(currInstrDef.maturity());
-                    Duration deltaDuration(_compoundFreq,
-                            Duration::YEAR);
+                    Duration deltaDuration(Duration(1, Duration::YEAR) / _compoundFreq);
 
                     // TODO: Add check that
                     // deltaDuration should be able to divide the 
@@ -123,18 +123,24 @@ void YieldCurveDefinition::_insertFakeInstrumentDefs()
                     {
                         Duration currDuration = deltaDuration * i;
 
-                        std::pair<std::vector<InstrumentDefinition *>::iterator, std::vector<InstrumentDefinition *>::iterator> result;
+                        InstrumentDefinition *stubInstr = new FAKEInstrDefinition(
+                                currDuration, -1);
 
-                        result = std::equal_range(iterBegin, iterEnd,
-                                &currDuration,
-                                InstrumentDefinitionDurationCompare());
+                        std::pair<std::vector<InstrumentDefinition *>::iterator,
+                            std::vector<InstrumentDefinition *>::iterator> result;
+
+                        result = std::equal_range(instrDefsCopy.begin(),
+                                instrDefsCopy.end(), stubInstr,
+                                InstrumentDefinitionCompare());
+
+                        delete stubInstr;
 
                         if(result.first != result.second)
-                            break;
+                            continue;
 
                         InstrumentDefinition *ptrNewInstrDef = 
                             new FAKEInstrDefinition(currDuration, -1);
-                        _instrDefs.insert(result.first, ptrNewInstrDef);
+                        instrDefsCopy.insert(result.first, ptrNewInstrDef);  
                     }
                     break;
                 }
@@ -149,6 +155,8 @@ void YieldCurveDefinition::_insertFakeInstrumentDefs()
 
         iterCurr ++;
     }
+
+    _instrDefs.swap(instrDefsCopy);
 }
 
 YieldCurveInstance* YieldCurveDefinition::bindData(

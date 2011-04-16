@@ -2,4 +2,8 @@
 tags
 *.swp
 *.a
-*.dSYM
+*dSYM
+/c7802.xcodeproj/
+/c7802.xcodeproj/**/*
+/ProjectModel.xcdatamodeld/
+/ProjectModel.xcdatamodeld/**/*

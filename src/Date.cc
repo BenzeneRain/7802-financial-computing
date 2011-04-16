@@ -429,7 +429,8 @@ Duration Duration::operator/(double rhs) const
 
 double Duration::operator/(Duration& rhs) const
 {
-    return 0.0;
+    Duration::TYPE type = this->type();
+    return this->getDuration(type) / rhs.getDuration(type);
 }
 
 Duration Duration::operator*(double rhs) const
@@ -440,6 +441,13 @@ Duration Duration::operator*(double rhs) const
     return newDuration;
 }
 
+bool Duration::operator==(const Duration& rhs) const
+{
+    double time1 = this->getDuration(this->type());
+    double time2 = rhs.getDuration(this->type());
+
+    return time1 == time2;
+}
 
 /////////////////////////////////////////
 // Definition of the class WorkDate

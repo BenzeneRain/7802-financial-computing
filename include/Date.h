@@ -29,6 +29,7 @@ class Duration
         std::string toString(Duration::TYPE type,
                 bool literal = false, bool hasUnit = true) const;
         
+        bool operator==(const Duration& ths) const;
         
         Duration operator/(double rhs) const;
         double operator/(Duration& rhs) const;

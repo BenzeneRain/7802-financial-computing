@@ -74,8 +74,8 @@ class YieldCurveInstance
         void insert(CurvePointDesc& data);
 
         // This return the actually point value on the curve
-        double operator[](Date& date);
-        double getDf(Date& date);
+        double operator[](Date& date) const;
+        double getDf(Date& date) const;
     protected:
         YieldCurveInstance();
 
@@ -83,8 +83,8 @@ class YieldCurveInstance
         // inserts the df to the curve, and
         // this function will change the df to
         // the corresponding value
-        virtual double _convertDfToSpecific(double df, double deltaT) = 0;
-        virtual double _convertSpecificToDf(double specVal, double deltaT) = 0; 
+        virtual double _convertDfToSpecific(double df, double deltaT) const = 0;
+        virtual double _convertSpecificToDf(double specVal, double deltaT) const = 0; 
 
 
         // Store the Points on the curve
@@ -114,21 +114,21 @@ class ZeroCouponRateCurve:
         ZeroCouponRateCurve(double compoundFreq);
 
         // Section about Curve Data
-        inline double _dfToZ(double df, double deltaT)
+        inline double _dfToZ(double df, double deltaT) const
         {
             return _compoundFreq * (
                     exp(-log(df) / (_compoundFreq * deltaT)) - 1.0f);
         };
-        inline double _ZTodf(double Z, double deltaT)
+        inline double _ZTodf(double Z, double deltaT) const
         {
             return exp(-1.0f * deltaT * _compoundFreq *
                     log(1.0f + Z / _compoundFreq));
         };
 
-        virtual double _convertDfToSpecific(double df, double deltaT)
+        virtual double _convertDfToSpecific(double df, double deltaT) const
             {return _dfToZ(df, deltaT);};
 
-        virtual double _convertSpecificToDf(double specVal, double deltaT) 
+        virtual double _convertSpecificToDf(double specVal, double deltaT) const 
             {return _ZTodf(specVal, deltaT);};
 
         double _compoundFreq;

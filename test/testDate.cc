@@ -11,12 +11,12 @@ class DateTest : public testing::Test
     protected:
         static void SetUpTestCase()
         {
-            std::cout << "-------- Start Testing Date Class --------" << std::endl;
+            std::cout << "\t\t\t\t\t-------- Start Testing Date Class --------" << std::endl;
         }
 
         static void TearDownTestCase()
         {
-            std::cout << "-------- Finish Testing Date Class --------"
+            std::cout << "\t\t\t\t\t-------- Finish Testing Date Class --------"
                 << std::endl << std::endl;
         }
 };
@@ -26,12 +26,12 @@ class DurationTest : public testing::Test
     protected:
         static void SetUpTestCase()
         {
-            std::cout << "-------- Start Testing Duration Class --------" << std::endl;
+            std::cout << "\t\t\t\t\t-------- Start Testing Duration Class --------" << std::endl;
         }
 
         static void TearDownTestCase()
         {
-            std::cout << "-------- Finish Testing Duration Class --------"
+            std::cout << "\t\t\t\t\t-------- Finish Testing Duration Class --------"
                 << std::endl << std::endl;
         }
 };
@@ -41,12 +41,12 @@ class MiscTest : public testing::Test
     protected:
         static void SetUpTestCase()
         {
-            std::cout << "-------- Start Testing miscellaneous date non-member functions --------" << std::endl;
+            std::cout << "\t\t\t\t\t-------- Start Testing miscellaneous date non-member functions --------" << std::endl;
         }
 
         static void TearDownTestCase()
         {
-            std::cout << "-------- Finish Testing miscellaneous date non-member functions --------"
+            std::cout << "\t\t\t\t\t-------- Finish Testing miscellaneous date non-member functions --------"
                 << std::endl << std::endl;
         }
 };
@@ -110,6 +110,7 @@ TEST_F(DateTest, DateArithmetics)
     Duration oneMonth(1, Duration::MONTH);
     Duration twoMonth(2, Duration::MONTH);
 
+    // Test Operator +
     EXPECT_EQ(expectDate111, testDate11 + oneMonth);
     EXPECT_EQ(expectDate121, testDate11 + oneMonth + oneMonth) <<
         "Expect " << expectDate121.get() << ", Actual " << (testDate11 + oneMonth + oneMonth).get();
@@ -120,11 +121,14 @@ TEST_F(DateTest, DateArithmetics)
         "Expect " << expectDate121.get() << ", Actual " << (testDate21 + oneMonth + oneMonth).get();
     EXPECT_EQ(expectDate231, testDate21 + twoMonth);
 
+    // Test Operator <
     EXPECT_LT(testDate11, testDate21);
     EXPECT_LT(testDate11, testDate31);
     EXPECT_LT(testDate41, testDate11);
     EXPECT_LT(testDate51, testDate11);
 
+    // Test Operator -
+    EXPECT_EQ(Duration(365.0, Duration::DAY), (testDate11 - testDate21));
 }
 
 TEST_F(DurationTest, DurationConstruction)

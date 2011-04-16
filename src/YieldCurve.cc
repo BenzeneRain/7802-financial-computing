@@ -24,7 +24,7 @@ YieldCurveDefinition::YieldCurveDefinition(std::vector<InstrumentDefinition *>& 
     sort(_instrDefs.begin(), _instrDefs.end(), 
             InstrumentDefinitionCompare());
 
-    //TODO: Add fake instrument definitions by
+    // Add fake instrument definitions by
     // interpolation
     _insertFakeInstrumentDefs();
 
@@ -390,10 +390,10 @@ void YieldCurveInstance::insert(CurvePoint_t& data)
     }
 }
 
-double YieldCurveInstance::operator[](Date& date)
+double YieldCurveInstance::operator[](Date& date) const
 {
-    std::pair<std::vector<CurvePoint_t>::iterator,
-        std::vector<CurvePoint_t>::iterator> iterRange;
+    std::pair<std::vector<CurvePoint_t>::const_iterator,
+        std::vector<CurvePoint_t>::const_iterator> iterRange;
 
     CurvePoint_t fakePoint(date, 0, 0, InstrumentDefinition::FAKE);
 
@@ -425,10 +425,10 @@ double YieldCurveInstance::operator[](Date& date)
     }
 }
 
-double YieldCurveInstance::getDf(Date& date)
+double YieldCurveInstance::getDf(Date& date) const
 {
-    std::pair<std::vector<CurvePoint_t>::iterator,
-        std::vector<CurvePoint_t>::iterator> iterRange;
+    std::pair<std::vector<CurvePoint_t>::const_iterator,
+        std::vector<CurvePoint_t>::const_iterator> iterRange;
 
     CurvePoint_t fakePoint(date, 0, 0, InstrumentDefinition::FAKE);
 

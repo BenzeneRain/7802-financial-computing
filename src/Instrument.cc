@@ -27,6 +27,27 @@ InstrumentDefinition::~InstrumentDefinition()
 {
 }
 
+std::string InstrumentDefinition::typeToString(
+        InstrumentDefinition::TYPE type)
+{
+    switch(type)
+    {
+        case InstrumentDefinition::CASH:
+            return std::string("CASH");
+        case InstrumentDefinition::FRA:
+            return std::string("FRA");
+        case InstrumentDefinition::SWAP:
+            return std::string("SWAP");
+        case InstrumentDefinition::FAKE:
+            return std::string("FAKE");
+        default:
+            {
+                std::string errorMessage("Invalid Instrument Definition Type");
+                throw InstrumentException(errorMessage);
+            }
+    }
+}
+
 InstrumentDefinition* InstrumentDefinition::parseString(std::string& instrDefStr)
 {
     try

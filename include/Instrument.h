@@ -13,13 +13,14 @@ class InstrumentDefinition
     public:
         ~InstrumentDefinition();
 
-        static InstrumentDefinition* parseString(
-                std::string& instrDefStr);
-
         enum TYPE {CASH = 0,
                    FRA  = 1,
                    SWAP = 2,
                    FAKE = 3};
+        static InstrumentDefinition* parseString(
+                std::string& instrDefStr);
+        static std::string typeToString(
+                InstrumentDefinition::TYPE type);
         inline int index() const {return _index;}
 
         inline enum TYPE type() const {return _type;}

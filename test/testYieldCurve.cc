@@ -1,3 +1,4 @@
+#include <iostream>
 #include <fstream>
 #include <string>
 
@@ -288,16 +289,28 @@ TEST_F(YieldCurveInstanceTest, YieldCurveInstanceConstruction1)
     std::vector<InstrumentDefinition *> generatedInstrDefs = ycDef.getAllDefinitions();
     std::vector<InstrumentDefinition *>& gdefs = generatedInstrDefs;
 
+    double expectedRate;
+    double actualRate;
     for(int i = 0; i < (int)values.values.size(); i ++)
     {
         std::pair<int, double>& valuepair = values.values[i];
         InstrumentDefinition *ptrDef = ycDef.getDefinitionByID(valuepair.first);
         Date maturityDate = Date::today() + ptrDef->maturity();
 
-        double expectedRate = valuepair.second;
-        double actualRate = getCompoundRate(*yci, maturityDate, ptrDef->type(), 4.0);
+        expectedRate = valuepair.second;
+        try
+        {
+            actualRate = getCompoundRate(*yci, maturityDate, ptrDef->type(), 4.0);
+        }
+        catch(YieldCurveException& e)
+        {
+            std::cout << e.what() << std::endl;
+        }
 
-        EXPECT_DOUBLE_EQ(expectedRate, actualRate);
+        EXPECT_NEAR(expectedRate, actualRate, 1e-5) << "Maturity: " << 
+            ptrDef->maturity().toString() << "; Maturity Date: " <<
+            maturityDate.toString() << "; Type: " << 
+            InstrumentDefinition::typeToString(ptrDef->type()) << std::endl;
     }
 
 

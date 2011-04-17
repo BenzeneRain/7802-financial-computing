@@ -9,7 +9,12 @@
 class Duration
 {
     public:
-        enum TYPE {DAY, WEEK, MONTH, QUARTER, YEAR, INVALID};
+        enum TYPE {DAY = 0, 
+                   WEEK = 1, 
+                   MONTH = 2, 
+                   QUARTER = 3, 
+                   YEAR = 4,
+                   INVALID = -1};
 
         Duration():_duration(-1), _type(INVALID){};
         explicit Duration(std::string& durStr);
@@ -30,10 +35,12 @@ class Duration
                 bool literal = false, bool hasUnit = true) const;
         
         bool operator==(const Duration& ths) const;
+        bool operator<(const Duration& rhs) const;
         
         Duration operator/(double rhs) const;
         double operator/(const Duration& rhs) const;
         Duration operator*(double rhs) const;
+        Duration operator-(const Duration& rhs) const;
     private:
         Duration::TYPE _type;
         double _duration;
@@ -72,6 +79,9 @@ class Date
 
         inline boost::gregorian::date get() const
             {return _date;}
+
+        inline std::string toString() const
+        {return boost::gregorian::to_simple_string(_date);}
 
     protected:
         boost::gregorian::date _date;

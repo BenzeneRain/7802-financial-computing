@@ -256,7 +256,8 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
                 instrValIndicesMap.end())
         {
             // If the definition has input compounding rate value
-            compRate = instrVals->values[(*iter).second].second;
+            compRate = instrVals->values[(*iter).second].second 
+                / 100.0f;
         }
         else
         {
@@ -265,10 +266,25 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
             std::pair<Date, double> startPoint(today + _instrDefs[prevInstrDefHasValue]->maturity(), instrVals->values[instrValIndicesMap[prevInstrDefHasValue]].second);
             std::pair<Date, double> endPoint(today + _instrDefs[nextInstrDefHasValue]->maturity(), instrVals->values[instrValIndicesMap[nextInstrDefHasValue]].second);
             compRate = Interpolation::linearInterpolation(
-                    startPoint, endPoint, maturityDate);
+                    startPoint, endPoint, maturityDate) / 100.0f;
         }
 
-        switch(instrDef.type())
+        InstrumentDefinition::TYPE instrDefType = instrDef.type();
+        if(instrDefType == InstrumentDefinition::FAKE)
+        {
+            static const Duration threeMonth(1, Duration::MONTH);
+            static const Duration oneYear(1, Duration::YEAR);
+
+            if(instrDef.maturity() < threeMonth)
+                instrDefType = InstrumentDefinition::CASH;
+            else if(instrDef.maturity() < oneYear)
+                instrDefType = InstrumentDefinition::FRA;
+            else 
+                instrDefType = InstrumentDefinition::SWAP;
+        }
+
+
+        switch(instrDefType)
         {
             case InstrumentDefinition::CASH:
                 {
@@ -281,8 +297,18 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
                 }
             case InstrumentDefinition::FRA:
                 {
-                    Duration startDuration = 
-                        dynamic_cast<FRAInstrDefinition&>(instrDef).startDuration();
+                    Duration startDuration; 
+                    if(instrDef.type() == InstrumentDefinition::FRA)
+                    {
+                        startDuration = 
+                            dynamic_cast<FRAInstrDefinition&>(instrDef).startDuration();
+                    }
+                    else
+                    {
+                        startDuration = 
+                            instrDef.maturity() - Duration(3, Duration::MONTH);
+                    }
+
                     Date startDate = today + startDuration;
 
                     deltaT = normDiffDate(startDate, maturityDate,
@@ -568,7 +594,7 @@ double getCompoundRate(YieldCurveInstance& instYC, Date& theDate,
                         (1.0f / instYC.getDf(theDate) - 1.0f) / 
                         deltaT;
 
-                    return compRate;
+                    return compRate * 100.0f;
                 }
             case InstrumentDefinition::FRA:
                 {
@@ -580,7 +606,7 @@ double getCompoundRate(YieldCurveInstance& instYC, Date& theDate,
                             Date::ACT365);
 
                     double compRate = (dfStart / dfMature - 1.0f) / deltaT;
-                    return compRate;
+                    return compRate * 100.0f;
                 }
             case InstrumentDefinition::SWAP:
                 {
@@ -592,7 +618,7 @@ double getCompoundRate(YieldCurveInstance& instYC, Date& theDate,
                     double sumDeltaTxDf = 0;
                     double dfn;
                     Date prevDate = today;
-                    for(int i = 0; i <= n; i ++)
+                    for(int i = 1; i <= n; i ++)
                     {
                         Duration currDuration = deltaDuration * i;
                         Date currDate = today + currDuration;
@@ -602,10 +628,12 @@ double getCompoundRate(YieldCurveInstance& instYC, Date& theDate,
                         sumDeltaTxDf += deltaT * df;
                         if(i == n)
                             dfn = df;
+
+                        prevDate = currDate;
                     }
 
                     double compRate = (1.0f - dfn) / sumDeltaTxDf;
-                    return compRate;
+                    return compRate * 100.0f;
                 }
             default:
                 {

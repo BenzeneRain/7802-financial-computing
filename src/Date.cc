@@ -32,6 +32,7 @@ Date Date::operator+(const Duration& rhs) const
 
     switch(type)
     {
+        case Duration::WEEK:
         case Duration::DAY:
         {
             boost::gregorian::date_duration duration(
@@ -39,14 +40,7 @@ Date Date::operator+(const Duration& rhs) const
             Date newDay(this->_date + duration);
             return newDay;
         }
-        case  Duration::WEEK:
-        {
-            boost::gregorian::weeks duration(
-                    (int)(rhs.getDuration(Duration::WEEK)));
-
-            Date newDay(this->_date + duration);
-            return newDay;
-        }
+        case Duration::YEAR:
         case Duration::MONTH:
         case Duration::QUARTER:
         {
@@ -63,33 +57,6 @@ Date Date::operator+(const Duration& rhs) const
             // modify the resulting day to the day 
             // before add
 
-            int diff;
-            if((diff = _date.day() - newRawDay.day()) < 0)
-            {
-                boost::gregorian::date modifiedRawDate =
-                    newRawDay - boost::gregorian::date_duration(-diff);
-                
-                Date modifiedDate(modifiedRawDate);
-                return modifiedDate;
-            }
-            else
-            {
-                return newDay;
-            }
-        }
-        case Duration::YEAR:
-        {
-            boost::gregorian::years duration(
-                    (int)(rhs.getDuration(Duration::YEAR)));
-
-            Date newDay(this->_date + duration);
-
-            boost::gregorian::date newRawDay(newDay.get());
-            // Considering the day
-            // in the month, if the resulting day is
-            // larger then the day before add, then
-            // modify the resulting day to the day 
-            // before add
             int diff;
             if((diff = _date.day() - newRawDay.day()) < 0)
             {
@@ -468,12 +435,31 @@ Duration Duration::operator*(double rhs) const
     return newDuration;
 }
 
+Duration Duration::operator-(const Duration& rhs) const
+{
+    Duration::TYPE type = std::max(_type, rhs.type());
+    Duration newDuration(this->operator<(rhs) ? 
+            rhs.getDuration(type) - this->getDuration(type) :
+            this->getDuration(type) - rhs.getDuration(type),
+            type);
+
+    return newDuration;
+}
+
 bool Duration::operator==(const Duration& rhs) const
 {
     double time1 = this->getDuration(this->type());
     double time2 = rhs.getDuration(this->type());
 
     return time1 == time2;
+}
+
+bool Duration::operator<(const Duration& rhs) const
+{
+    double time1 = this->getDuration(_type);
+    double time2 = rhs.getDuration(_type);
+
+    return time1 < time2;
 }
 
 /////////////////////////////////////////

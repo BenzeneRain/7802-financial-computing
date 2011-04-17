@@ -27,6 +27,8 @@ class InstrumentDefinition
 
         virtual std::string subtype() const = 0;
 
+        InstrumentDefinition* clone();
+
     protected:
         InstrumentDefinition(const Duration& maturity,
                 const int index);

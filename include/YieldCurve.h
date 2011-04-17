@@ -34,6 +34,7 @@ class YieldCurveDefinition
         YieldCurveInstance* bindData(InstrumentValues *instrVals,
                 YieldCurveDefinition::CURVETYPE type);
 
+        InstrumentDefinition *getDefinitionByID(int id);
     protected:
         void _insertFakeInstrumentDefs();
 
@@ -134,6 +135,11 @@ class ZeroCouponRateCurve:
 
         double _compoundFreq;
 };
+
+// calculate the compound rate of specified Instrument
+// type and the given Date from the yield curve
+double getCompoundRate(YieldCurveInstance&, Date&,
+        InstrumentDefinition::TYPE);
 
 class YieldCurveException:
     public std::runtime_error

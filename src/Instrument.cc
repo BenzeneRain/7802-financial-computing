@@ -144,6 +144,48 @@ InstrumentDefinition* InstrumentDefinition::parseString(std::string& instrDefStr
 
 }
 
+InstrumentDefinition* InstrumentDefinition::clone()
+{
+    InstrumentDefinition *newInstrDef;
+    switch(this->type())
+    {
+        case InstrumentDefinition::CASH:
+            {
+                CASHInstrDefinition* instrDef = 
+                    dynamic_cast<CASHInstrDefinition *>(this);
+
+                newInstrDef = new CASHInstrDefinition(*instrDef);
+                break;
+            }
+        case InstrumentDefinition::FRA:
+            {
+                FRAInstrDefinition* instrDef =
+                    dynamic_cast<FRAInstrDefinition *>(this);
+
+                newInstrDef = new FRAInstrDefinition(*instrDef);
+                break;
+            }
+        case InstrumentDefinition::SWAP:
+            {
+                SWAPInstrDefinition* instrDef =
+                    dynamic_cast<SWAPInstrDefinition *>(this);
+
+                newInstrDef = new SWAPInstrDefinition(*instrDef);
+                break;
+            }
+        case InstrumentDefinition::FAKE:
+            {
+                FAKEInstrDefinition* instrDef = 
+                    dynamic_cast<FAKEInstrDefinition *>(this);
+
+                newInstrDef = new FAKEInstrDefinition(*instrDef);
+                break;
+            }
+    }
+
+    return newInstrDef;
+}
+
 //////////////////////////////////////////
 // Definition of CASHInstrDefinition class
 //////////////////////////////////////////

@@ -297,8 +297,7 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
             case InstrumentDefinition::SWAP:
                 {
                     Duration maturityDuration(instrDef.maturity());
-                    Duration deltaDuration(_compoundFreq,
-                            Duration::YEAR);
+                    Duration deltaDuration(Duration(1, Duration::YEAR) / _compoundFreq);
 
                     Date prevDate = today;
                     double sumDeltaTxDf = 0.0; 
@@ -348,54 +347,30 @@ std::vector<InstrumentDefinition *> YieldCurveDefinition::getAllDefinitions() co
 
     for(int i = 0; i < (int)_instrDefs.size(); i ++)
     {
-        switch(_instrDefs[i]->type())
-        {
-            case InstrumentDefinition::CASH:
-                {
-                    CASHInstrDefinition* instrDef = 
-                        dynamic_cast<CASHInstrDefinition *>(
-                                _instrDefs[i]);
-
-                    allInstrDefs.push_back(
-                            new CASHInstrDefinition(*instrDef));
-                    break;
-                }
-            case InstrumentDefinition::FRA:
-                {
-                    FRAInstrDefinition* instrDef =
-                        dynamic_cast<FRAInstrDefinition *>(
-                                _instrDefs[i]);
-
-                    allInstrDefs.push_back(
-                            new FRAInstrDefinition(*instrDef));
-                    break;
-                }
-            case InstrumentDefinition::SWAP:
-                {
-                    SWAPInstrDefinition* instrDef =
-                        dynamic_cast<SWAPInstrDefinition *>(
-                                _instrDefs[i]);
-
-                    allInstrDefs.push_back(
-                            new SWAPInstrDefinition(*instrDef));
-                    break;
-                }
-            case InstrumentDefinition::FAKE:
-                {
-                    FAKEInstrDefinition* instrDef = 
-                        dynamic_cast<FAKEInstrDefinition *>(
-                                _instrDefs[i]);
-
-                    allInstrDefs.push_back(
-                            new FAKEInstrDefinition(*instrDef));
-                    break;
-                }
-        }
+        allInstrDefs.push_back(_instrDefs[i]->clone());
     }
 
     return allInstrDefs;
 }
 
+InstrumentDefinition* 
+YieldCurveDefinition::getDefinitionByID(int id)
+{
+    std::map<int, int>::iterator iter;
+    if((iter = _instrDefIndicesMap.find(id)) 
+            != _instrDefIndicesMap.end())
+    {
+        int vecIndex = (*iter).second;
+        InstrumentDefinition* ptr = _instrDefs[vecIndex];
+
+        return ptr->clone();
+    }
+    else
+    {
+        // FIX: Throw exception
+        return NULL;
+    }
+}
 //////////////////////////////////////////
 // Definition of the class YieldCurveInstance
 //////////////////////////////////////////
@@ -571,4 +546,77 @@ ZeroCouponRateCurve& ZeroCouponRateCurve::operator=(ZeroCouponRateCurve& rhs)
 bool CurvePoint_t::operator<(const CurvePoint_t& rhs) const
 {
     return (this->date < rhs.date);
+}
+
+//////////////////////////////////////////
+// Definition of the miscellaneous non-member funcitons
+//////////////////////////////////////////
+double getCompoundRate(YieldCurveInstance& instYC, Date& theDate,
+        InstrumentDefinition::TYPE type, double compoundFreq)
+{
+    Date today = Date::today();
+    try
+    {
+        switch(type)
+        {
+            case InstrumentDefinition::CASH:
+                {
+                    double deltaT = normDiffDate(today, theDate,
+                            Date::ACT365);
+
+                    double compRate = 
+                        (1.0f / instYC.getDf(theDate) - 1.0f) / 
+                        deltaT;
+
+                    return compRate;
+                }
+            case InstrumentDefinition::FRA:
+                {
+                    Date startDate = theDate - Duration(3, Duration::MONTH);
+                    double dfStart = instYC.getDf(startDate);
+                    double dfMature = instYC.getDf(theDate);
+                    
+                    double deltaT = normDiffDate(startDate, theDate,
+                            Date::ACT365);
+
+                    double compRate = (dfStart / dfMature - 1.0f) / deltaT;
+                    return compRate;
+                }
+            case InstrumentDefinition::SWAP:
+                {
+                    Duration maturityDuration(theDate - today);
+                    Duration deltaDuration(Duration(1, Duration::YEAR) / compoundFreq);
+
+                    int n = floor(maturityDuration / deltaDuration);
+
+                    double sumDeltaTxDf = 0;
+                    double dfn;
+                    Date prevDate = today;
+                    for(int i = 0; i <= n; i ++)
+                    {
+                        Duration currDuration = deltaDuration * i;
+                        Date currDate = today + currDuration;
+                        double deltaT = normDiffDate(prevDate,
+                                currDate, Date::ACT365);
+                        double df = instYC.getDf(currDate);
+                        sumDeltaTxDf += deltaT * df;
+                        if(i == n)
+                            dfn = df;
+                    }
+
+                    double compRate = (1.0f - dfn) / sumDeltaTxDf;
+                    return compRate;
+                }
+            default:
+                {
+                    std::string errorMessage("Invalid Instrument"
+                            "Definition TYPE");
+                    throw YieldCurveException(errorMessage);
+                }
+        }
+    }
+    catch(YieldCurveException& e)
+    {
+        throw e;
+    }
 }

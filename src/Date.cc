@@ -121,6 +121,33 @@ Duration Date::operator-(const Date& rhs) const
     return Duration(duration.days(), Duration::DAY);
 }
 
+Date Date::operator-(const Duration& rhs) const
+{
+    switch(rhs.type())
+    {
+        case Duration::WEEK:
+        case Duration::DAY:
+            {
+                boost::gregorian::date_duration duration(rhs.getDuration(Duration::DAY));
+                boost::gregorian::date newDate = this->_date - duration;
+                return Date(newDate);
+            }
+        case Duration::YEAR:
+        case Duration::QUARTER:
+        case Duration::MONTH:
+            {
+                boost::gregorian::months duration(rhs.getDuration(Duration::MONTH));
+                boost::gregorian::date newDate = this->_date - duration;
+                return Date(newDate);
+            }
+        default:
+            {
+                std::string errorMessage("Invalid Date");
+                throw DurationException(errorMessage);
+            }
+    }
+}
+
 bool Date::operator<(const Date& rhs) const
 {
     return _date < rhs._date;

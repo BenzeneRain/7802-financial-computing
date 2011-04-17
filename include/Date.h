@@ -65,6 +65,7 @@ class Date
 
         // Return the duration between two dates
         Duration operator-(const Date& rhs) const;
+        Date operator-(const Duration& rhs) const;
         
         bool operator<(const Date& rhs) const;
         bool operator==(const Date& rhs) const;

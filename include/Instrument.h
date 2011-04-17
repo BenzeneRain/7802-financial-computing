@@ -140,8 +140,8 @@ class FAKEInstrDefinition:
 class InstrumentValues
 {
     public:
-        InstrumentValues();
-        ~InstrumentValues();
+        InstrumentValues(){};
+        ~InstrumentValues(){};
 
 
         // use pair(index, rate) to represent the Instrument values 

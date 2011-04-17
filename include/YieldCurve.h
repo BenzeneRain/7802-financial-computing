@@ -139,7 +139,7 @@ class ZeroCouponRateCurve:
 // calculate the compound rate of specified Instrument
 // type and the given Date from the yield curve
 double getCompoundRate(YieldCurveInstance&, Date&,
-        InstrumentDefinition::TYPE);
+        InstrumentDefinition::TYPE, double);
 
 class YieldCurveException:
     public std::runtime_error

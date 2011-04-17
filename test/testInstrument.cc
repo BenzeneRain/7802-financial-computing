@@ -9,13 +9,13 @@ class InstrumentTest : public testing::Test
     protected:
         static void SetUpTestCase()
         {
-            std::cout << "-------- Start Testing Instrument Class --------"
+            std::cout << "\t\t\t\t\t-------- Start Testing Instrument Class --------"
                 << std::endl;
         }
 
         static void TearDownTestCase()
         {
-            std::cout << "-------- Finish Testing Instrument Class --------"
+            std::cout << "\t\t\t\t\t-------- Finish Testing Instrument Class --------"
                 << std::endl << std::endl;
         }
 };

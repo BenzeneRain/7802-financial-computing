@@ -3,6 +3,13 @@ tags
 *.swp
 *.a
 *dSYM
+*.pdf
+*.eps
+*.log
+*.aux
+*.synctex.gz
+*.dia~
+*.autosave
 /c7802.xcodeproj/
 /c7802.xcodeproj/**/*
 /ProjectModel.xcdatamodeld/

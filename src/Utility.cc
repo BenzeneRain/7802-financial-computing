@@ -1,3 +1,4 @@
+#include <cmath>
 #include "Utility.h"
 
 
@@ -9,3 +10,71 @@ Interpolation::~Interpolation()
 {
 }
 
+double VolatilityFromEuroCallPriceFormula::f(double x) const
+{
+    return _C - _S * _N(_g(x)) - 
+        _K * exp(-_r * _T) * _N(_g(x) - x * sqrt(_T));
+}
+
+double VolatilityFromEuroCallPriceFormula::fprime(double x) const
+{
+    return _S * _Nprime(_g(x)) * _gprime(x) - 
+        _K * exp(-_r * _T) * _Nprime(_g(x) - x * sqrt(_T)) * 
+        (_gprime(x) - sqrt(_T));
+}
+
+double VolatilityFromEuroCallPriceFormula::getInitialGuess() const
+{
+    return (double)(rand() % 100 + 1) / 100.0;
+}
+
+double VolatilityFromEuroCallPriceFormula::_N(double x) const
+{
+    if(x < 0)
+        return 1.0 - _N(-x);
+
+    const double a1 = 0.319381530;
+    const double a2 = -0.356563782;
+    const double a3 = 1.781477937;
+    const double a4 = -1.821255978;
+    const double a5 = 1.330274429;
+    const double k = 1.0 / (1.0 + 0.2316419 * x);
+    return 1.0 - _Nprime(x) * (a1 * k + a2 * k * k + 
+            a3 * k * k * k + a4 * k * k * k * k +
+            a5 * k * k * k * k * k);
+}
+
+double VolatilityFromEuroCallPriceFormula::_Nprime(double x) const
+{
+    return 1.0 / sqrt(2 * acos(-1)) * exp(x * x / 2.0);
+}
+
+double VolatilityFromEuroCallPriceFormula::_g(double x) const
+{
+    return (log(_S / _K) + (_r + x * x / 2.0) * _T) / (x * sqrt(_T));
+}
+
+double VolatilityFromEuroCallPriceFormula::_gprime(double x) const
+{
+    return 1.5 * sqrt(_T) + _r * sqrt(_T) / (x * x) - 
+        log(_S / _K) / (x * x * sqrt(_T));
+}
+
+double NewtonRaphsonMethod::operator()(FormulaClass& formula,
+        double maxError)
+{
+    double currX, nextX;
+    double fx, fpx;
+    currX = formula.getInitialGuess();
+    fx = formula.f(currX);
+
+    do
+    {
+        fpx = formula.fprime(currX);
+        nextX = currX - fx / fpx;
+        currX = nextX;
+        fx = formula.f(currX);
+    }while(fabs(fx) >= maxError);
+
+    return currX;
+}

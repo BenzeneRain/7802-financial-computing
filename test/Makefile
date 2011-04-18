@@ -2,7 +2,10 @@ GTEST_LIB_PATH = $(LIB_PATH)/gtest
 GTEST_LIB = $(GTEST_LIB_PATH)/libgtest.a
 GTEST_HEADER_PATH = $(GTEST_LIB_PATH)/include
 
-CFLAGS += -I$(GTEST_HEADER_PATH) -I$(PROJ_ROOT)/include -isystem/opt/local/include  -ggdb3 -O0
+CFLAGS += -I$(GTEST_HEADER_PATH) -I$(PROJ_ROOT)/include
+#CFLAGS += -isystem/opt/local/include
+#CFLAGS += -ggdb3 -O0
+CFLAGS += -O2
 
 TEST_SOURCE_FILES = testDate.cc testInstrument.cc testYieldCurve.cc
 TEST_OBJECT_FILES = $(patsubst %.cc, %, $(TEST_SOURCE_FILES))

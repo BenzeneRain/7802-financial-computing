@@ -48,7 +48,7 @@ struct InstrumentDefinitionCompare:
             const InstrumentDefinition& rhs) const;
 
     bool operator()(const InstrumentDefinition* ptrlhs,
-            const InstrumentDefinition* ptrlhs) const;
+            const InstrumentDefinition* ptrrhs) const;
 };
 
 struct InstrumentDefinitionDurationCompare:

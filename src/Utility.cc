@@ -1,6 +1,10 @@
 #include <cmath>
+#include <string>
+#include <sstream>
+#include <stdexcept>
 #include "Utility.h"
 
+using namespace Volatility;
 
 Interpolation::Interpolation()
 {
@@ -60,21 +64,28 @@ double VolatilityFromEuroCallPriceFormula::_gprime(double x) const
         log(_S / _K) / (x * x * sqrt(_T));
 }
 
-double NewtonRaphsonMethod::operator()(FormulaClass& formula,
-        double maxError)
+double NewtonRaphsonMethod::operator()(const FormulaClass& formula,
+        double maxError) const
 {
     double currX, nextX;
     double fx, fpx;
     currX = formula.getInitialGuess();
     fx = formula.f(currX);
 
-    do
+    while(fabs(fx) >= maxError)
     {
         fpx = formula.fprime(currX);
+        if(fpx == 0)
+        {
+            std::ostringstream oss;
+            oss << "f'(" << currX << ") == 0";
+            std::string errorMessage(oss.str());
+            throw std::runtime_error(errorMessage);
+        }
         nextX = currX - fx / fpx;
         currX = nextX;
         fx = formula.f(currX);
-    }while(fabs(fx) >= maxError);
+    };
 
     return currX;
 }

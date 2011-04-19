@@ -10,8 +10,8 @@ CFLAGS += -O2
 TEST_SOURCE_FILES = testDate.cc testInstrument.cc testYieldCurve.cc
 TEST_OBJECT_FILES = $(patsubst %.cc, %, $(TEST_SOURCE_FILES))
 
-DEP_LIBS = $(SOURCE_PATH)/YieldCurve.a $(GTEST_LIB) \
-		   $(LIB_PATH)/boost/libboost_regex.a\
+DEP_LIBS = $(SOURCE_PATH)/YieldCurve.a $(SOURCE_PATH)/Tools.a\
+		   $(GTEST_LIB) $(LIB_PATH)/boost/libboost_regex.a\
 		   $(LIB_PATH)/boost/libboost_date_time.a
 
 .PHONY: all clean run

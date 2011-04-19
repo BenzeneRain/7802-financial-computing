@@ -4,11 +4,16 @@ CFLAGS += -I./include -c
 CFLAGS += -O2
 
 
-SOURCE_FILES = Date.cc Instrument.cc YieldCurve.cc Utility.cc
-OBJECT_FILES = $(patsubst %.cc, %.o, $(SOURCE_FILES))
+YIELDCURVE_SOURCE_FILES = Instrument.cc YieldCurve.cc
+TOOLS_SOURCE_FILES = Date.cc Utility.cc
+
+YIELDCURVE_OBJECT_FILES = $(patsubst %.cc, %.o, $(YIELDCURVE_SOURCE_FILES))
+TOOLS_OBJECT_FILES = $(patsubst %.cc, %.o, $(TOOLS_SOURCE_FILES))
+OBJECT_FILES = $(YIELDCURVE_OBJECT_FILES) $(TOOLS_OBJECT_FILES)
+
 DEP_LIBS = $(LIB_PATH)/boost/libboost_regex.a $(LIB_PATH)/boost/libboost_date_time.a
 
-AR_FILES = YieldCurve.a
+AR_FILES = YieldCurve.a Tools.a
 
 .PHONY: all clean
 
@@ -17,8 +22,14 @@ all: $(OBJECT_FILES) $(AR_FILES)
 $(OBJECT_FILES): %.o:%.cc
 	$(CXX) $(CFLAGS) -o $@ $<
 
-$(AR_FILES): $(OBJECT_FILES) $(DEP_LIBS)
-	ar -rv $@ $(OBJECT_FILES) $(DEP_LIBS)
+YieldCurve.a: $(YIELDCURVE_OBJECT_FILES) $(DEP_LIBS)
+	ar -rv $@ $^
+
+Tools.a:$(TOOLS_OBJECT_FILES) $(DEP_LIBS)
+	ar -rv $@ $^
+
+#$(AR_FILES): $(OBJECT_FILES) $(DEP_LIBS)
+#	ar -rv $@ $(OBJECT_FILES) $(DEP_LIBS)
 
 clean:
 	$(RM) $(OBJECT_FILES)

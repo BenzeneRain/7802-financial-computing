@@ -5,6 +5,7 @@
 #include "Utility.h"
 
 using namespace Volatility;
+using namespace RandomNumberGenerator;
 
 Interpolation::Interpolation()
 {
@@ -88,4 +89,21 @@ double NewtonRaphsonMethod::operator()(const FormulaClass& formula,
     };
 
     return currX;
+}
+
+std::pair<double, double> boxMullerM2RNG()
+{
+    double x;
+    double y;
+    double r;
+    
+    do
+    {
+        x = (double)(rand() % 10001) / 5000.0 - 1.0;
+        y = (double)(rand() % 10001) / 5000.0 - 1.0;
+        r = x * x + y * y;
+    }while(r >= 1.0);
+
+    double coef = sqrt(-2.0 * log(r) / r);
+    return std::pair<double, double>(x * coef, y * coef);
 }

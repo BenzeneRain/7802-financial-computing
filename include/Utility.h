@@ -107,4 +107,15 @@ namespace Volatility {
 
 }
 
+namespace RandomNumberGenerator
+{
+    // Random Number Generator using 
+    // Box Muller Algorithm method 2
+    // The generated RNGs ~ N(0,1)
+    // The algorithm each time returns two
+    // RNGs
+    std::pair<double, double> boxMullerM2RNG();
+
+}
+
 #endif // _INCLUDE_UTILITY_H_

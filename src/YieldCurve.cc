@@ -177,6 +177,8 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
         }
     }
 
+    Date today = Date::today();
+
     // TODO: We also need to make sure there are at least
     // two values, and one is O/N
 
@@ -185,7 +187,8 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
     switch(type)
     {
         case YieldCurveDefinition::ZEROCOUPONRATE:
-            ptrNewInstance = new ZeroCouponRateCurve(_compoundFreq);
+            ptrNewInstance = new ZeroCouponRateCurve(
+                    _compoundFreq, today);
             break;
         default:
             {
@@ -229,7 +232,6 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
     
     // TODO: Un-optimized brute force loop
     // Loop start
-    Date today = Date::today();
     for(int i = 0; i <= lastInstrDefID; i ++)
     {
         InstrumentDefinition& instrDef = *_instrDefs[i];
@@ -400,20 +402,23 @@ YieldCurveDefinition::getDefinitionByID(int id)
 //////////////////////////////////////////
 // Definition of the class YieldCurveInstance
 //////////////////////////////////////////
-YieldCurveInstance::YieldCurveInstance()
+YieldCurveInstance::YieldCurveInstance(const Date& startDate):
+    _startDate(startDate)
 {
 }
 
-YieldCurveInstance::YieldCurveInstance(YieldCurveInstance& rhs)
+YieldCurveInstance::YieldCurveInstance(const YieldCurveInstance& rhs):
+    _startDate(rhs._startDate)
 {
     *this = this->operator=(rhs);
 }
 
 YieldCurveInstance& YieldCurveInstance::operator=(
-        YieldCurveInstance& rhs)
+        const YieldCurveInstance& rhs)
 {
     std::vector<CurvePoint_t>(rhs._curveData).swap(_curveData); 
     std::map<Date, int>(rhs._curveDataIndicesMap).swap(_curveDataIndicesMap);
+    _startDate = rhs._startDate;
     return *this;
 }
 
@@ -534,12 +539,13 @@ double YieldCurveInstance::getDf(Date& date) const
 //////////////////////////////////////////
 // Definition of the class ZeroCouponRateCurve
 //////////////////////////////////////////
-ZeroCouponRateCurve::ZeroCouponRateCurve(double compoundFreq):
-    _compoundFreq(compoundFreq)
+ZeroCouponRateCurve::ZeroCouponRateCurve(
+        double compoundFreq, const Date& startDate):
+    _compoundFreq(compoundFreq), YieldCurveInstance(startDate)
 {
 }
 
-ZeroCouponRateCurve::ZeroCouponRateCurve(ZeroCouponRateCurve& rhs):
+ZeroCouponRateCurve::ZeroCouponRateCurve(const ZeroCouponRateCurve& rhs):
     YieldCurveInstance(rhs)
 {
     _compoundFreq = rhs._compoundFreq;

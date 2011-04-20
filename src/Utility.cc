@@ -91,7 +91,8 @@ double NewtonRaphsonMethod::operator()(const FormulaClass& formula,
     return currX;
 }
 
-std::pair<double, double> boxMullerM2RNG()
+
+void boxMullerM2RNG::_genNumbers()
 {
     double x;
     double y;
@@ -105,5 +106,9 @@ std::pair<double, double> boxMullerM2RNG()
     }while(r >= 1.0);
 
     double coef = sqrt(-2.0 * log(r) / r);
-    return std::pair<double, double>(x * coef, y * coef);
+    _buffer[0] = x * coef;
+    _buffer[1] = y * coef;
+    _numItemInBuf = 1;
+
+    return ;
 }

@@ -114,7 +114,49 @@ namespace RandomNumberGenerator
     // The generated RNGs ~ N(0,1)
     // The algorithm each time returns two
     // RNGs
-    std::pair<double, double> boxMullerM2RNG();
+    class boxMullerM2RNG
+    {
+        public:
+            enum MODE {ANTITHETIC, NONANTITHETIC};
+
+            boxMullerM2RNG(MODE mode):
+                _mode(mode), _numItemInBuf(-1),
+                _buffer(2){};
+            ~boxMullerM2RNG(){};
+
+            inline double operator()()
+            {
+                if(_mode == NONANTITHETIC)
+                {
+                    // In non-antithetic mode,
+                    // regenerate the random number
+                    // whenever call the function, and
+                    // only return the first number.
+                    _genNumbers();
+                    return _buffer[0]; 
+                }
+                else
+                {
+                    // In antithetic mode, both
+                    // number generated will be used
+                    if(_numItemInBuf < 0)
+                    {
+                        // If all two numbers are returned,
+                        // then regenerate
+                        _genNumbers();
+                    }
+
+                    return _buffer[_numItemInBuf --];
+                }
+            }
+
+        private:
+            MODE _mode;
+            std::vector<double> _buffer;
+            int _numItemInBuf;
+
+            void _genNumbers();
+    };
 
 }
 

@@ -67,10 +67,13 @@ typedef struct CurvePointDesc CurvePoint_t;
 class YieldCurveInstance
 {
     public:
-        explicit YieldCurveInstance(YieldCurveInstance& rhs);
-        virtual YieldCurveInstance& operator=(YieldCurveInstance& rhs);
+        explicit YieldCurveInstance(const YieldCurveInstance& rhs);
+        virtual YieldCurveInstance& operator=(const YieldCurveInstance& rhs);
 
         virtual ~YieldCurveInstance(){};
+
+        // return the start Date of the curve
+        inline Date startDate() const {return _startDate;};
 
         // insert the data to the curve
         void insert(CurvePointDesc& data);
@@ -79,7 +82,7 @@ class YieldCurveInstance
         double operator[](Date& date) const;
         double getDf(Date& date) const;
     protected:
-        YieldCurveInstance();
+        explicit YieldCurveInstance(const Date& startDate);
 
         // void insert() will call this when it
         // inserts the df to the curve, and
@@ -96,6 +99,7 @@ class YieldCurveInstance
         // map from the Date to the vector index of 
         // _curveDate
         std::map<Date, int> _curveDataIndicesMap;
+        Date _startDate;
 };
 
 class ZeroCouponRateCurve:
@@ -106,14 +110,14 @@ class ZeroCouponRateCurve:
                 InstrumentValues*,
                 YieldCurveDefinition::CURVETYPE);
 
-        explicit ZeroCouponRateCurve(ZeroCouponRateCurve& rhs);
+        explicit ZeroCouponRateCurve(const ZeroCouponRateCurve& rhs);
         virtual YieldCurveInstance& operator=(YieldCurveInstance& rhs);
         ZeroCouponRateCurve& operator=(ZeroCouponRateCurve& rhs);
 
         virtual ~ZeroCouponRateCurve();
 
     private:
-        ZeroCouponRateCurve(double compoundFreq);
+        ZeroCouponRateCurve(double compoundFreq, const Date& startDate);
 
         // Section about Curve Data
         inline double _dfToZ(double df, double deltaT) const

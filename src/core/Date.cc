@@ -13,6 +13,11 @@ Date::Date(const boost::gregorian::date& date):
 {
 }
 
+Date::Date(const std::string& dateStr):
+    _date(boost::gregorian::from_string(dateStr))
+{
+}
+
 Date::~Date()
 {
 }

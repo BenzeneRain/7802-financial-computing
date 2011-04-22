@@ -475,26 +475,30 @@ double YieldCurveInstance::operator[](Date& date) const
     int distUD = distance(iterRange.first, iterRange.second);
     
     if(distUD == 0)
-    {
-        std::string errorMessage("Cannot get the value on the "
-                "Yield Curve of the giving Date. The date is "
-                "out of the range.");
+        if(iterRange.first == _curveData.end() || 
+                iterRange.first == _curveData.begin())
+        {
+            std::string errorMessage("Cannot get the value on the "
+                    "Yield Curve of the giving Date. The date is "
+                    "out of the range.");
 
-        throw YieldCurveException(errorMessage);
-    }
-    else
-    {
-        double value;
-        CurvePoint_t lowerElement = *(iterRange.first);
-        CurvePoint_t upperElement = *(iterRange.second);
+            throw YieldCurveException(errorMessage);
+        }
+        else
+        {
+            iterRange.first --;
+        }
 
-        value = Interpolation::linearInterpolation(
-                lowerElement.date, lowerElement.value,
-                upperElement.date, upperElement.value,
-                date);
+    double value;
+    CurvePoint_t lowerElement = *(iterRange.first);
+    CurvePoint_t upperElement = *(iterRange.second);
 
-        return value;
-    }
+    value = Interpolation::linearInterpolation(
+            lowerElement.date, lowerElement.value,
+            upperElement.date, upperElement.value,
+            date);
+
+    return value;
 }
 
 double YieldCurveInstance::getDf(Date& date) const
@@ -510,30 +514,34 @@ double YieldCurveInstance::getDf(Date& date) const
     int distUD = distance(iterRange.first, iterRange.second);
     
     if(distUD == 0)
-    {
-        std::string errorMessage("Cannot get the value on the "
-                "Yield Curve of the giving Date. The date is "
-                "out of the range.");
+        if(iterRange.first == _curveData.end() || 
+                iterRange.first == _curveData.begin())
+        {
+            std::string errorMessage("Cannot get the value on the "
+                    "Yield Curve of the giving Date. The date is "
+                    "out of the range.");
 
-        throw YieldCurveException(errorMessage);
-    }
-    else
-    {
-        double value;
-        CurvePoint_t lowerElement = *(iterRange.first);
-        CurvePoint_t upperElement = *(iterRange.second);
+            throw YieldCurveException(errorMessage);
+        }
+        else
+        {
+            iterRange.first --;
+        }
 
-        value = Interpolation::linearInterpolation(
-                lowerElement.date, lowerElement.value,
-                upperElement.date, upperElement.value,
-                date);
+    double value;
+    CurvePoint_t lowerElement = *(iterRange.first);
+    CurvePoint_t upperElement = *(iterRange.second);
 
-        Date today = Date::today();
-        double deltaT = normDiffDate(today, date, Date::ACT365);
-        value = _convertSpecificToDf(value, deltaT);
+    value = Interpolation::linearInterpolation(
+            lowerElement.date, lowerElement.value,
+            upperElement.date, upperElement.value,
+            date);
 
-        return value;
-    }
+    Date today = Date::today();
+    double deltaT = normDiffDate(today, date, Date::ACT365);
+    value = _convertSpecificToDf(value, deltaT);
+
+    return value;
 }
 
 //////////////////////////////////////////

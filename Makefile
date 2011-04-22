@@ -2,8 +2,13 @@ export TEST_PATH = $(CURDIR)/test
 export PROJ_ROOT = $(CURDIR)
 export SOURCE_PATH = $(CURDIR)/src
 export LIB_PATH = $(CURDIR)/lib
-#export CXX = llvm-g++
-export CXX = g++
+export CXX = llvm-g++
+#export CXX = g++
+
+CFLAGS = -O0 -ggdb3
+CFLAGS += -isystem/opt/local/include
+export CFLAGS
+#export CFLAGS =  -O2
 
 .PHONY: all test run-test clean
 

@@ -59,6 +59,7 @@ class Date
         enum TYPE {ACT365, ACT365J};
 
         Date(const boost::gregorian::date& date);
+        Date(const std::string& dateStr);
         Date(const Date& rdate):
             _date(rdate._date){};
 

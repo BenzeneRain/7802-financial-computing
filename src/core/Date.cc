@@ -8,6 +8,11 @@
 /////////////////////////////////////////
 // Definition of the class Date
 //////////////////////////////////////////
+Date::Date():
+    _date(boost::gregorian::day_clock::local_day())
+{
+}
+
 Date::Date(const boost::gregorian::date& date):
     _date(date)
 {

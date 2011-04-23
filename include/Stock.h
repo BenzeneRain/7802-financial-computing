@@ -15,7 +15,7 @@ namespace Stock
         std::vector<std::pair<Date, double> >
             MonteCarloSimulation(double startPrice,
                     Date& startDate, Duration& duration,
-                    double numSteps, YieldCurveInstance& instYC,
+                    int numSteps, YieldCurveInstance& instYC,
                     double volatility, RNG instRNG); 
 
     }
@@ -24,7 +24,7 @@ namespace Stock
 template<class RNG>
 std::vector<std::pair<Date, double> > Stock::PricePredictionModel::
 MonteCarloSimulation(double startPrice, Date& startDate,
-        Duration& duration, double numSteps, 
+        Duration& duration, int numSteps, 
         YieldCurveInstance& instYC, double volatility, RNG instRNG)
 {
     std::vector<std::pair<Date, double> > predictions(numSteps + 1);
@@ -49,7 +49,7 @@ MonteCarloSimulation(double startPrice, Date& startDate,
         double rate =  - log(futureDf) / deltaTForR;
 
         double futurePrice = currPrice * (1.0 + rate * deltaT + 
-                instRNG() * volatility * sqrt(deltaT));
+                instRNG.get() * volatility * sqrt(deltaT));
 
         predictions[i] = std::pair<Date, double>(
                 futureDate, futurePrice);

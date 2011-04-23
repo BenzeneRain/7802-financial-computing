@@ -76,7 +76,7 @@ namespace Volatility {
             // _S: current stock price
             // _K: strike price
             // _T: time to expiration
-            // _r: continues time risk free rate
+            // _r: continuous time risk free rate
             // _C: European call price
             VolatilityFromEuroCallPriceFormula(double S, double K,
                     double T, double r, double C):
@@ -119,12 +119,12 @@ namespace RandomNumberGenerator
         public:
             enum MODE {ANTITHETIC, NONANTITHETIC};
 
-            boxMullerM2RNG(MODE mode):
+            boxMullerM2RNG(boxMullerM2RNG::MODE mode):
                 _mode(mode), _numItemInBuf(-1),
                 _buffer(2){};
             ~boxMullerM2RNG(){};
 
-            inline double operator()()
+            inline double get()
             {
                 if(_mode == NONANTITHETIC)
                 {

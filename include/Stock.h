@@ -45,7 +45,7 @@ MonteCarloSimulation(double startPrice, Date& startDate,
                 Date::ACT365);
         
         // FIX: Not sure about it
-        double futureDf = instYC[futureDate] ;
+        double futureDf = instYC.getDf(futureDate) ;
         double rate =  - log(futureDf) / deltaTForR;
 
         double futurePrice = currPrice * (1.0 + rate * deltaT + 

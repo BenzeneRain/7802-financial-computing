@@ -157,6 +157,13 @@ main(int argc, char * argv[])
             std::cout << "Expire Date: " << expireDate.toString() << std::endl;
             std::cout << "Expire Trading price: " << expireTradePrice << std::endl;
             std::cout << "Volatility: " << volatility << std::endl;
+            std::cout << "Price Predictions:" << std::endl; 
+            for(int i = 0; i < (int) futurePrices.size(); i ++)
+            {
+                std::cout << "\t" << futurePrices[i].first.toString() << "\t"
+                    << futurePrices[i].second << std::endl;
+            }
+
             std::cout << "Pay out according to Method 1: " << payout1 << std::endl; 
             std::cout << "Pay out according to Method 2: " << payout2 << std::endl; 
             std::cout << std::endl;

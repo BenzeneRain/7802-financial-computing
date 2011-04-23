@@ -17,13 +17,13 @@ Interpolation::~Interpolation()
 
 double VolatilityFromEuroCallPriceFormula::f(double x) const
 {
-    return _C - _S * _N(_g(x)) - 
+    return _C - _S * _N(_g(x)) + 
         _K * exp(-_r * _T) * _N(_g(x) - x * sqrt(_T));
 }
 
 double VolatilityFromEuroCallPriceFormula::fprime(double x) const
 {
-    return _S * _Nprime(_g(x)) * _gprime(x) - 
+    return -_S * _Nprime(_g(x)) * _gprime(x) + 
         _K * exp(-_r * _T) * _Nprime(_g(x) - x * sqrt(_T)) * 
         (_gprime(x) - sqrt(_T));
 }
@@ -51,7 +51,7 @@ double VolatilityFromEuroCallPriceFormula::_N(double x) const
 
 double VolatilityFromEuroCallPriceFormula::_Nprime(double x) const
 {
-    return 1.0 / sqrt(2 * acos(-1)) * exp(x * x / 2.0);
+    return exp( - x * x / 2.0) / sqrt(2 * acos(-1));
 }
 
 double VolatilityFromEuroCallPriceFormula::_g(double x) const
@@ -61,7 +61,7 @@ double VolatilityFromEuroCallPriceFormula::_g(double x) const
 
 double VolatilityFromEuroCallPriceFormula::_gprime(double x) const
 {
-    return 1.5 * sqrt(_T) + _r * sqrt(_T) / (x * x) - 
+    return 0.5 * sqrt(_T) - _r * sqrt(_T) / (x * x) - 
         log(_S / _K) / (x * x * sqrt(_T));
 }
 

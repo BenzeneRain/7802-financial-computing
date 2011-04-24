@@ -2,6 +2,7 @@
 *.zip
 tags
 *.swp
+*.swo
 *.a
 *dSYM
 *.pdf

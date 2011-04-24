@@ -4,7 +4,7 @@ GTEST_HEADER_PATH = $(GTEST_LIB_PATH)/include
 
 CFLAGS += -I$(GTEST_HEADER_PATH) -I$(PROJ_ROOT)/include
 
-TEST_SOURCE_FILES = testDate.cc testInstrument.cc testYieldCurve.cc
+TEST_SOURCE_FILES = testDate.cc testInstrument.cc testYieldCurve.cc testUtility.cc
 TEST_OBJECT_FILES = $(patsubst %.cc, %, $(TEST_SOURCE_FILES))
 
 DEP_LIBS = $(SOURCE_PATH)/core/YieldCurve.a $(SOURCE_PATH)/core/Tools.a\

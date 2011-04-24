@@ -5,10 +5,10 @@ export LIB_PATH = $(CURDIR)/lib
 export CXX = llvm-g++
 #export CXX = g++
 
-CFLAGS = -O0 -ggdb3
+#CFLAGS = -O0 -ggdb3
+CFLAGS  = -O2
 CFLAGS += -isystem/opt/local/include
 export CFLAGS
-#export CFLAGS =  -O2
 
 .PHONY: all test run-test clean
 

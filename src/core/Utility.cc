@@ -103,7 +103,7 @@ void boxMullerM2RNG::_genNumbers()
         x = (double)(rand() % 10001) / 5000.0 - 1.0;
         y = (double)(rand() % 10001) / 5000.0 - 1.0;
         r = x * x + y * y;
-    }while(r >= 1.0);
+    }while(r >= 1.0 || r == 0);
 
     double coef = sqrt(-2.0 * log(r) / r);
     _buffer[0] = x * coef;

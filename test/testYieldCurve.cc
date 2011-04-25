@@ -193,8 +193,8 @@ TEST_F(YieldCurveDefinitionTest, YieldCurveDefinitionConstruction2)
         testEqualYieldCurveDefinition(InstrumentDefinition::CASH,
                 Duration(1, Duration::DAY), 2, *gdefs[0]);
 
-        testEqualYieldCurveDefinition(InstrumentDefinition::FAKE,
-                Duration(3, Duration::MONTH), -1, *gdefs[1]);
+        testEqualYieldCurveDefinition(InstrumentDefinition::CASH,
+                Duration(3, Duration::MONTH), 3, *gdefs[1]);
 
         testEqualYieldCurveDefinition(InstrumentDefinition::FAKE,
                 Duration(6, Duration::MONTH), -1, *gdefs[2]);
@@ -236,6 +236,36 @@ TEST_F(YieldCurveDefinitionTest, YieldCurveDefinitionConstruction2)
         gdefs.pop_back();
         delete instrDef;
     }
+
+    while(!instrDefs.empty())
+    {
+        InstrumentDefinition *instrDef = instrDefs.back();
+        instrDefs.pop_back();
+        delete instrDef;
+    }
+
+    fin.close();
+}
+
+TEST_F(YieldCurveDefinitionTest, YieldCurveDefinitionConstruction3)
+{
+    std::ifstream fin("testYieldCurveData/curveSpec3.csv");
+    std::string line;
+    std::vector<InstrumentDefinition *> instrDefs;
+
+    getline(fin, line);
+    
+    while(fin.good())
+    {
+        getline(fin, line);
+        if(!fin.good())
+            break;
+
+        InstrumentDefinition *instrDef = InstrumentDefinition::parseString(line);
+        instrDefs.push_back(instrDef);
+    }
+
+    EXPECT_ANY_THROW(YieldCurveDefinition ycDef(instrDefs, 4.0));
 
     while(!instrDefs.empty())
     {

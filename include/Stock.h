@@ -3,6 +3,8 @@
 
 #include <vector>
 #include <utility>
+#include <string>
+#include <stdexcept>
 
 #include "Date.h"
 #include "YieldCurve.h"
@@ -19,6 +21,15 @@ namespace Stock
                     double volatility, RNG instRNG); 
 
     }
+
+    class StockException:
+        public std::runtime_error
+    {
+        public:
+            StockException(const std::string& errorStr):
+                std::runtime_error(errorStr){};
+    };
+
 }
 
 template<class RNG>
@@ -29,8 +40,16 @@ MonteCarloSimulation(double startPrice, Date& startDate,
 {
     std::vector<std::pair<Date, double> > predictions(numSteps + 1);
     Date curveStartDate = instYC.startDate();
-    // TODO: Sanity check that the start date of the price
+    // Sanity check that the start date of the price
     // should be at least the yield curve instance start date
+
+    if(startDate < curveStartDate)
+    {
+        std::string errorMessage("The start date of the simulation should be late than"
+                " the Yield Curve start date");
+        throw Stock::StockException(errorMessage);
+    }
+
 
     Duration deltaDuration = duration / numSteps;
     predictions[0] = std::pair<Date, double>(startDate, startPrice);
@@ -38,7 +57,7 @@ MonteCarloSimulation(double startPrice, Date& startDate,
     double currPrice = startPrice;
     for(int i = 1; i <= numSteps; i ++)
     {
-        Date futureDate = startDate + deltaDuration * i;
+        Date futureDate = WorkDate(startDate + deltaDuration * i);
         double deltaT = normDiffDate(startDate, futureDate, 
                 Date::ACT365);
         double deltaTForR = normDiffDate(curveStartDate, futureDate,

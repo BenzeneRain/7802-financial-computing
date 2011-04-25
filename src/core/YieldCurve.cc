@@ -17,9 +17,31 @@ YieldCurveDefinition::YieldCurveDefinition(std::vector<InstrumentDefinition *>& 
 {
     _instrDefs = instrDefs;
     
-    // TODO: check if there are at least three instrument 
+    // check if there are at least three instrument 
     // Definitions, which should at least include O/N
-    // and 3W
+    // and 3M
+    bool findON = false;
+    bool find3M = false;
+    for(int i = 0; i < (int)_instrDefs.size(); i ++)
+    {
+        Duration duration = _instrDefs[i]->maturity();
+        if(duration.getDuration(Duration::DAY) == 1)
+            findON = true;
+        if(duration.getDuration(Duration::MONTH) == 3)
+            find3M = true;
+
+        if(findON && find3M)
+            break;
+    }
+
+    if(!(findON && find3M) || _instrDefs.size() < 3)
+    {
+        std::string errorMessage("There should be"
+                "at least three instrument definitions, "
+                "and O/N and 3M should be provided");
+
+        throw YieldCurveException(errorMessage);
+    }
 
     // Sort instrument definitions
     sort(_instrDefs.begin(), _instrDefs.end(), 
@@ -77,7 +99,6 @@ void YieldCurveDefinition::_insertFakeInstrumentDefs()
                     std::pair<std::vector<InstrumentDefinition *>::iterator,
                         std::vector<InstrumentDefinition*>::iterator> result;
 
-                    // FIX: If this does not work, then
                     // Allocate the Fake Instrument Definition
                     // using the startDuration first,
                     // and then use InstrumentDefinitionCompare()
@@ -180,8 +201,35 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
 
     Date today = WorkDate(Date::today());
 
-    // TODO: We also need to make sure there are at least
-    // two values, and one is O/N
+    // check if there are at least three instrument 
+    // rata, which should at least include O/N
+    // and 3M
+    // TODO: Provide test case to cover this
+    bool findON = false;
+    bool find3M = false;
+    for(int i = 0; i < (int)instrVals->values.size(); i ++)
+    {
+        int instrDefIndex = instrVals->values[i].first;
+        int instrDefVecIndex = _instrDefIndicesMap[instrDefIndex]; 
+        Duration duration = _instrDefs[instrDefVecIndex]->maturity();
+
+        if(duration.getDuration(Duration::DAY) == 1)
+            findON = true;
+        if(duration.getDuration(Duration::MONTH) == 3)
+            find3M = true;
+
+        if(findON && find3M)
+            break;
+    }
+
+    if(!(findON && find3M) || (int)instrVals->values.size() < 3)
+    {
+        std::string errorMessage("There should be"
+                "at least three instrument data, "
+                "and O/N and 3M should be provided");
+
+        throw YieldCurveException(errorMessage);
+    }
 
     // Allocate new Yield Curve Instance
     YieldCurveInstance *ptrNewInstance = NULL;
@@ -218,10 +266,6 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
             lastInstrDefID = instrDefIndex;
     }
 
-    // TODO: lastInstrDefID should never be -1, but may be we need to
-    // implement a check later
-
-    
     int prevInstrDefHasValue = 0;
     int nextInstrDefHasValue = -1;
     for(int i = 0; i < _instrDefs.size(); i ++)
@@ -357,8 +401,12 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
                     break;
                 }
             default:
-                // TODO: Throw switch unreachable error
-                break;
+                {
+                    std::string errorMessage("Invalid Instrument"
+                            "Definition type");
+                    throw YieldCurveException(errorMessage);
+                    break;
+                }
         }
 
         // Insert the point to the Curve
@@ -396,8 +444,11 @@ YieldCurveDefinition::getDefinitionByID(int id)
     }
     else
     {
-        // FIX: Throw exception
-        return NULL;
+        std::ostringstream oss;
+        oss << "Invalid instrument definition ID " <<
+            id;
+        std::string errorMessage(oss.str());
+        throw YieldCurveException(errorMessage);
     }
 }
 //////////////////////////////////////////

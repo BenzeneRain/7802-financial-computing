@@ -17,8 +17,9 @@ YieldCurveDefinition::YieldCurveDefinition(std::vector<InstrumentDefinition *>& 
 {
     _instrDefs = instrDefs;
     
-    // TODO: check if there are at least two instrument 
-    // Definitions, and one of them is O/N
+    // TODO: check if there are at least three instrument 
+    // Definitions, which should at least include O/N
+    // and 3W
 
     // Sort instrument definitions
     sort(_instrDefs.begin(), _instrDefs.end(), 
@@ -177,7 +178,7 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
         }
     }
 
-    Date today = Date::today();
+    Date today = WorkDate(Date::today());
 
     // TODO: We also need to make sure there are at least
     // two values, and one is O/N
@@ -239,7 +240,7 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
         double deltaT;
         double deltaTToMaturity;
         double compRate;
-        Date maturityDate = today + instrDef.maturity();
+        Date maturityDate = WorkDate(today + instrDef.maturity());
 
         if(i > nextInstrDefHasValue)
         {
@@ -311,7 +312,7 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
                             instrDef.maturity() - Duration(3, Duration::MONTH);
                     }
 
-                    Date startDate = today + startDuration;
+                    Date startDate = WorkDate(today + startDuration);
 
                     deltaT = normDiffDate(startDate, maturityDate,
                             Date::ACT365);
@@ -327,13 +328,13 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
                     Duration maturityDuration(instrDef.maturity());
                     Duration deltaDuration(Duration(1, Duration::YEAR) / _compoundFreq);
 
-                    Date prevDate = today;
+                    Date prevDate = WorkDate(today);
                     double sumDeltaTxDf = 0.0; 
                     int n = floor(maturityDuration / deltaDuration);
                     for(int i = 1; i <= n; i ++)
                     {
                         Duration currDuration = deltaDuration * i;
-                        Date currDate = today + currDuration;
+                        Date currDate = WorkDate(today + currDuration);
 
                         deltaT = normDiffDate(prevDate, currDate,
                                 Date::ACT365);
@@ -537,7 +538,7 @@ double YieldCurveInstance::getDf(Date& date) const
             upperElement.date, upperElement.value,
             date);
 
-    Date today = Date::today();
+    Date today = WorkDate(Date::today());
     double deltaT = normDiffDate(today, date, Date::ACT365);
     value = _convertSpecificToDf(value, deltaT);
 
@@ -594,7 +595,7 @@ bool CurvePoint_t::operator<(const CurvePoint_t& rhs) const
 double getCompoundRate(YieldCurveInstance& instYC, Date& theDate,
         InstrumentDefinition::TYPE type, double compoundFreq)
 {
-    Date today = Date::today();
+    Date today = WorkDate(Date::today());
     try
     {
         switch(type)
@@ -612,7 +613,7 @@ double getCompoundRate(YieldCurveInstance& instYC, Date& theDate,
                 }
             case InstrumentDefinition::FRA:
                 {
-                    Date startDate = theDate - Duration(3, Duration::MONTH);
+                    Date startDate = WorkDate(theDate - Duration(3, Duration::MONTH));
                     double dfStart = instYC.getDf(startDate);
                     double dfMature = instYC.getDf(theDate);
                     
@@ -635,7 +636,7 @@ double getCompoundRate(YieldCurveInstance& instYC, Date& theDate,
                     for(int i = 1; i <= n; i ++)
                     {
                         Duration currDuration = deltaDuration * i;
-                        Date currDate = today + currDuration;
+                        Date currDate = WorkDate(today + currDuration);
                         double deltaT = normDiffDate(prevDate,
                                 currDate, Date::ACT365);
                         double df = instYC.getDf(currDate);

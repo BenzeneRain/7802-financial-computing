@@ -89,8 +89,6 @@ main(int argc, char * argv[])
         finCVDef.close();
 
         YieldCurveDefinition ycDef(instrDefs, 4.0);
-//        std::vector<InstrumentDefinition *> generatedInstrDefs = ycDef.getAllDefinitions();
-//        std::vector<InstrumentDefinition *>& gdefs = generatedInstrDefs;
 
         std::cout << "Binding Yield Curve Data to the definition ..." << std::endl;
         InstrumentValues values;
@@ -109,24 +107,26 @@ main(int argc, char * argv[])
         YieldCurveInstance *yci = ycDef.bindData(&values, YieldCurveDefinition::ZEROCOUPONRATE);
 
         std::cout << "Reading and processing options ..." << std::endl;
-        Date today = Date::today();
+        Date today = WorkDate(Date::today());
         std::ifstream finOptionDesc(inOptionDescFilename.c_str());
         getline(finOptionDesc, line);
-        int optionIndex = 1;
         while(finOptionDesc.good())
         {
             double strike, expireTradePrice, currTradePrice;
+            int rounds, steps, optIndex;
             std::string expireDateStr;
             char comma;
 
-            finOptionDesc >> currTradePrice >> comma >> strike >> comma >>
+            finOptionDesc >> optIndex >> comma >> steps >> comma >> rounds >>
+                comma >> currTradePrice >> comma >> strike >> comma >>
                 expireTradePrice >> comma >> expireDateStr;
 
             if(!finOptionDesc.good())
                 break;
 
 
-            Date expireDate(expireDateStr);
+            Date expireDateUnModified(expireDateStr);
+            Date expireDate = WorkDate(expireDateUnModified);
 
             // Calculate Volatility
             double deltaT = normDiffDate(today, expireDate, Date::ACT365); 
@@ -141,31 +141,40 @@ main(int argc, char * argv[])
 
             Duration duration = expireDate - today;
             // Forecast the price using Monte-Carlo Method
-            std::vector<std::pair<Date, double> > futurePrices;
+            double sumPayout1;
+            double sumPayout2;
+            for(int i = 0; i < rounds; i ++)
+            {
+                std::vector<std::pair<Date, double> > futurePrices;
 
-            futurePrices = MonteCarloSimulation<boxMullerM2RNG>(currTradePrice, today,
-                    duration, 10, *yci, volatility,
-                    boxMullerM2RNG(boxMullerM2RNG::ANTITHETIC));
+                futurePrices = MonteCarloSimulation<boxMullerM2RNG>(currTradePrice, today,
+                        duration, steps, *yci, volatility,
+                        boxMullerM2RNG(boxMullerM2RNG::ANTITHETIC));
 
 
-            double payout1 = payOutFunc1(futurePrices);
-            double payout2 = payOutFunc2(futurePrices);
+                double payout1 = payOutFunc1(futurePrices);
+                double payout2 = payOutFunc2(futurePrices);
+                sumPayout1 += payout1;
+                sumPayout2 += payout2;
+            }
 
-            std::cout << "Option "  << optionIndex << std::endl;
+            std::cout << "Option "  << optIndex << std::endl;
+            std::cout << "Rounds: " << rounds << std::endl;
+            std::cout << "Steps: " << steps << std::endl;
             std::cout << "Current Trading Price: " << currTradePrice << std::endl;
             std::cout << "Strike: " << strike << std::endl;
             std::cout << "Expire Date: " << expireDate.toString() << std::endl;
             std::cout << "Expire Trading price: " << expireTradePrice << std::endl;
             std::cout << "Volatility: " << volatility << std::endl;
-            std::cout << "Price Predictions:" << std::endl; 
-            for(int i = 0; i < (int) futurePrices.size(); i ++)
-            {
-                std::cout << "\t" << futurePrices[i].first.toString() << "\t"
-                    << futurePrices[i].second << std::endl;
-            }
+//            std::cout << "Price Predictions:" << std::endl; 
+//            for(int i = 0; i < (int) futurePrices.size(); i ++)
+//            {
+//                std::cout << "\t" << futurePrices[i].first.toString() << "\t"
+//                    << futurePrices[i].second << std::endl;
+//            }
 
-            std::cout << "Pay out according to Method 1: " << payout1 << std::endl; 
-            std::cout << "Pay out according to Method 2: " << payout2 << std::endl; 
+            std::cout << "Average pay out according to Method 1: " << sumPayout1 / (double)rounds << std::endl; 
+            std::cout << "Average pay out according to Method 2: " << sumPayout2 / (double)rounds << std::endl; 
             std::cout << std::endl;
         }
         finOptionDesc.close();

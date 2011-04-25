@@ -71,11 +71,11 @@ main(int argc, char * argv[])
 
         std::cout << "Dumping the curve data to the output file " << outFilename << " ..." << std::endl;
         std::vector<boost::tuple<Date, double, double> > queryResults;
-        Date startDate = yci->startDate();
+        Date startDate = WorkDate(yci->startDate());
 
         for(int i = 0; i < (int)gdefs.size(); i ++)
         {
-            Date maturityDate = startDate + gdefs[i]->maturity();
+            Date maturityDate = WorkDate(startDate + gdefs[i]->maturity());
             double df = yci->getDf(maturityDate);
             double rate = (*yci)[maturityDate];
 
@@ -95,7 +95,8 @@ main(int argc, char * argv[])
 
             try
             {
-                Date date(dateStr);
+                Date dateUnModified(dateStr);
+                Date date = WorkDate(dateUnModified);
                 double df = yci->getDf(date);
                 double rate = (*yci)[date];
                 queryResults.push_back(boost::tuple<Date, double, double>(date, df, rate));

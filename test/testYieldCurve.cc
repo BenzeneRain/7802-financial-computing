@@ -295,7 +295,7 @@ TEST_F(YieldCurveInstanceTest, YieldCurveInstanceConstruction1)
     {
         std::pair<int, double>& valuepair = values.values[i];
         InstrumentDefinition *ptrDef = ycDef.getDefinitionByID(valuepair.first);
-        Date maturityDate = Date::today() + ptrDef->maturity();
+        Date maturityDate = WorkDate(Date::today() + ptrDef->maturity());
 
         expectedRate = valuepair.second;
         try

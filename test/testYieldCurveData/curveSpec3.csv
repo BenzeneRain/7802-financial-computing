@@ -1,4 +1,4 @@
 InstrumentType,subType,ID
 CASH,ON,2
-CASH,3M,3
+FRA,3x6,3
 SWAP,3Y,1

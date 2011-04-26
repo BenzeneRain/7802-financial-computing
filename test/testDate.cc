@@ -451,25 +451,3 @@ TEST_F(DurationTest, DurationArithmetics)
 
     EXPECT_DOUBLE_EQ(2.5, (oneQuarter * 10.0).getDuration(Duration::YEAR));
 }
-
-class CustomedTestEnvironment : public testing::Environment
-{
-    public:
-        virtual void SetUp()
-        {
-            std::cout << "\t\t\t\t\t@@@@@@@@@@@@@@\\/ Begin testing Date.cc \\/@@@@@@@@@@@@@@@" << std::endl;
-        }
-
-        virtual void TearDown()
-        {
-            std::cout << "\t\t\t\t\t@@@@@@@@@@@@@@@/\\ Finish testing Date.cc /\\@@@@@@@@@@@@@@@"
-                << std::endl << std::endl << std::endl;
-        }
-};
-
-int main(int argc, char * argv[])
-{
-    testing::AddGlobalTestEnvironment(new CustomedTestEnvironment);
-    testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}

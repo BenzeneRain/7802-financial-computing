@@ -136,25 +136,3 @@ TEST_F(RNGTest, Test_BoxMullerM2RNG_NONANTITHETIC_Fitting_StardardNormalDistribu
 
 }
 
-
-class CustomedTestEnvironment : public testing::Environment
-{
-    public:
-        virtual void SetUp()
-        {
-            std::cout << "\t\t\t\t\t@@@@@@@@@@@@@@\\/ Begin testing Utility.cc/h \\/@@@@@@@@@@@@@@@" << std::endl;
-        }
-
-        virtual void TearDown()
-        {
-            std::cout << "\t\t\t\t\t@@@@@@@@@@@@@@@/\\ Finish testing Utility.cc/h /\\@@@@@@@@@@@@@@@"
-                << std::endl << std::endl << std::endl;
-        }
-};
-
-int main(int argc, char * argv[])
-{
-    testing::AddGlobalTestEnvironment(new CustomedTestEnvironment);
-    testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}

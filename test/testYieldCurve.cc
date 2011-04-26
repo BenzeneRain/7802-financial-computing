@@ -354,26 +354,3 @@ TEST_F(YieldCurveInstanceTest, YieldCurveInstanceConstruction1)
     }
 
 }
-
-class CustomedTestEnvironment : public testing::Environment
-{
-    public:
-        virtual void SetUp()
-        {
-            std::cout << "\t\t\t\t\t@@@@@@@@@@@@@@@\\/ Begin testing "__FILE__" \\/@@@@@@@@@@@@@@@" 
-                << std::endl;
-        }
-
-        virtual void TearDown()
-        {
-            std::cout << "\t\t\t\t\t@@@@@@@@@@@@@@@/\\ Finish testing "__FILE__" /\\@@@@@@@@@@@@@@@"
-                << std::endl << std::endl << std::endl;
-        }
-};
-
-int main(int argc, char * argv[])
-{
-    testing::AddGlobalTestEnvironment(new CustomedTestEnvironment);
-    testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}

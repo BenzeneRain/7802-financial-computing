@@ -2,6 +2,7 @@
 #include <string>
 #include <algorithm>
 #include <cmath>
+#include <functional>
 
 #include "YieldCurve.h"
 #include "Instrument.h"
@@ -65,8 +66,20 @@ YieldCurveDefinition::YieldCurveDefinition(std::vector<InstrumentDefinition *>& 
 
 YieldCurveDefinition::~YieldCurveDefinition()
 {
-    // Remove all the fake instrument
+    std::vector<InstrumentDefinition *>::iterator iter;
+    // dispose all the fake instrument
+    for(iter = _instrDefs.begin(); iter != _instrDefs.end(); iter ++)
+    {
+        InstrumentDefinition* ptrInstrDef = *iter;
+        if(ptrInstrDef->type() == InstrumentDefinition::FAKE)
+        {
+            _instrDefs.erase(iter);
+            delete ptrInstrDef;
+        }
+    }
+
 }
+
 
 void YieldCurveDefinition::_insertFakeInstrumentDefs()
 {

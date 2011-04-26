@@ -1,0 +1,14 @@
+Step 1: 
+Run the command 'make all' to compile all the codes
+It is equivalent to execute 'make source' and then execute 'make test'
+
+Step 2:
+Run the command 'make run-test' to verify the engine
+
+Step 3:
+Run the command 'make run' to run the part 1 and part 2 of the project.
+The output of the part 1 will be written to out.csv
+It is equivalent to execute 'make run-part1' first and then execute 'make run-part2' 
+
+Alternative Step:
+Run the command 'make clean' to clean the generate codes

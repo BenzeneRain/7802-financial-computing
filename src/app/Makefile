@@ -2,7 +2,6 @@ CFLAGS += -I$(PROJ_ROOT)/include
 #CFLAGS += -isystem/opt/local/include
 
 SOURCE_FILES = generateYieldCurve.cc optionMCSim.cc
-OUTPUT_DIR = $(PROJ_ROOT)/bin
 EXEC_FILES = $(patsubst %.cc, %, $(SOURCE_FILES))
 
 DEP_LIBS = $(PROJ_ROOT)/src/core/YieldCurve.a\
@@ -13,15 +12,15 @@ DEP_LIBS = $(PROJ_ROOT)/src/core/YieldCurve.a\
 
 .PHONY: all clean
 
-all: $(OUTPUT_DIR) $(EXEC_FILES)
+all: $(BIN_PATH) $(EXEC_FILES)
 
-$(OUTPUT_DIR):
-	if [ ! -d $(OUTPUT_DIR) ]; then\
-		mkdir $(OUTPUT_DIR); \
+$(BIN_PATH):
+	if [ ! -d $(BIN_PATH) ]; then\
+		mkdir $(BIN_PATH); \
 	fi
 
 $(EXEC_FILES): %:%.cc
-	$(CXX) $(CFLAGS) -o $(OUTPUT_DIR)/$@ $< $(DEP_LIBS)
+	$(CXX) $(CFLAGS) -o $(BIN_PATH)/$@ $< $(DEP_LIBS)
 
 clean:
-	$(RM) -r $(OUTPUT_DIR)
+	$(RM) -r $(BIN_PATH)

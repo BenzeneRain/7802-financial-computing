@@ -128,6 +128,22 @@ main(int argc, char * argv[])
         }
         fout.close();
 
+        delete yci;
+
+        while(!gdefs.empty())
+        {
+            InstrumentDefinition * ptrInstrDef = gdefs.back();
+            gdefs.pop_back();
+            delete ptrInstrDef;
+        }
+
+        while(!instrDefs.empty())
+        {
+            InstrumentDefinition * ptrInstrDef = instrDefs.back();
+            instrDefs.pop_back();
+            delete ptrInstrDef;
+        }
+
         std::cout << "Program finished successfully." << std::endl;
     }
     catch(std::fstream::failure& e)

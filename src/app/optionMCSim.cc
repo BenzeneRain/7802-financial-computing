@@ -179,6 +179,15 @@ main(int argc, char * argv[])
         }
         finOptionDesc.close();
 
+        delete yci;
+
+        while(!instrDefs.empty())
+        {
+            InstrumentDefinition * ptrInstrDef = instrDefs.back();
+            instrDefs.pop_back();
+            delete ptrInstrDef;
+        }
+
         std::cout << "Program finished successfully." << std::endl;
     }
     catch(std::fstream::failure& e)

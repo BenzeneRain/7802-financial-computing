@@ -141,8 +141,9 @@ main(int argc, char * argv[])
 
             Duration duration = expireDate - today;
             // Forecast the price using Monte-Carlo Method
-            double sumPayout1;
-            double sumPayout2;
+            // Antithetice method
+            double sumPayout1 = 0;
+            double sumPayout2 = 0;
             for(int i = 0; i < rounds; i ++)
             {
                 std::vector<std::pair<Date, double> > futurePrices;
@@ -158,6 +159,46 @@ main(int argc, char * argv[])
                 sumPayout2 += payout2;
             }
 
+            std::cout << "Using Antithetic Random Number Generator" << std::endl;
+            std::cout << "Option "  << optIndex << std::endl;
+            std::cout << "Rounds: " << rounds << std::endl;
+            std::cout << "Steps: " << steps << std::endl;
+            std::cout << "Current Trading Price: " << currTradePrice << std::endl;
+            std::cout << "Strike: " << strike << std::endl;
+            std::cout << "Expire Date: " << expireDate.toString() << std::endl;
+            std::cout << "Expire Trading price: " << expireTradePrice << std::endl;
+            std::cout << "Volatility: " << volatility << std::endl;
+//            std::cout << "Price Predictions:" << std::endl; 
+//            for(int i = 0; i < (int) futurePrices.size(); i ++)
+//            {
+//                std::cout << "\t" << futurePrices[i].first.toString() << "\t"
+//                    << futurePrices[i].second << std::endl;
+//            }
+
+            std::cout << "Average pay out according to Method 1: " << sumPayout1 / (double)rounds << std::endl; 
+            std::cout << "Average pay out according to Method 2: " << sumPayout2 / (double)rounds << std::endl; 
+            std::cout << std::endl;
+
+            // Forecast the price using Monte-Carlo Method
+            // Antithetice method
+            sumPayout1 = 0;
+            sumPayout2 = 0;
+            for(int i = 0; i < rounds; i ++)
+            {
+                std::vector<std::pair<Date, double> > futurePrices;
+
+                futurePrices = MonteCarloSimulation<boxMullerM2RNG>(currTradePrice, today,
+                        duration, steps, *yci, volatility,
+                        boxMullerM2RNG(boxMullerM2RNG::NONANTITHETIC));
+
+
+                double payout1 = payOutFunc1(futurePrices);
+                double payout2 = payOutFunc2(futurePrices);
+                sumPayout1 += payout1;
+                sumPayout2 += payout2;
+            }
+
+            std::cout << "Using Non-Antithetic Random Number Generator" << std::endl;
             std::cout << "Option "  << optIndex << std::endl;
             std::cout << "Rounds: " << rounds << std::endl;
             std::cout << "Steps: " << steps << std::endl;

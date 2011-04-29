@@ -27,7 +27,7 @@ YieldCurve.a: $(YIELDCURVE_OBJECT_FILES) $(DEP_LIBS)
 Tools.a:$(TOOLS_OBJECT_FILES) $(DEP_LIBS)
 	ar -rv $@ $^
 
-Stock.a:$(STOCK_SOURCE_FILES) $(DEP_LIBS)
+Stock.a:$(STOCK_OBJECT_FILES) $(DEP_LIBS)
 	ar -rv $@ $^
 
 

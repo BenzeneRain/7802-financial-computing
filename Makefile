@@ -11,7 +11,6 @@ export CXX = g++
 #CFLAGS = -O0 -ggdb3
 CFLAGS  = -O2
 CFLAGS  += -I$(LIB_PATH)/boost/include 
-#CFLAGS += -isystem/opt/local/include
 export CFLAGS
 
 OS := $(shell uname)
@@ -33,15 +32,21 @@ run-test: test
 os-depend-libs:
 ifeq ($(OS), Darwin)
 	ln -sf $(LIB_PATH)/gtest/libgtest-apple.a $(LIB_PATH)/gtest/libgtest.a
+	ln -sf $(LIB_PATH)/boost/libboost_date_time_apple.a $(LIB_PATH)/boost/libboost_date_time.a
+	ln -sf $(LIB_PATH)/boost/libboost_regex_apple.a $(LIB_PATH)/boost/libboost_regex.a
 endif
 ifeq ($(OS), Linux)
 	ln -sf $(LIB_PATH)/gtest/libgtest-linux.a $(LIB_PATH)/gtest/libgtest.a
+	ln -sf $(LIB_PATH)/boost/libboost_date_time_linux.a $(LIB_PATH)/boost/libboost_date_time.a
+	ln -sf $(LIB_PATH)/boost/libboost_regex_linux.a $(LIB_PATH)/boost/libboost_regex.a
 endif
 
 clean:
 	$(MAKE) -C $(SOURCE_PATH) clean
 	$(MAKE) -C $(TEST_PATH) clean
 	$(RM) $(LIB_PATH)/gtest/libgtest.a
+	$(RM) $(LIB_PATH)/boost/libboost_date_time.a
+	$(RM) $(LIB_PATH)/boost/libboost_regex.a
 
 run: run-part1 run-part2
 

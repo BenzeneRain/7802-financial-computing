@@ -6,9 +6,9 @@ EXEC_FILES = $(patsubst %.cc, %, $(SOURCE_FILES))
 
 DEP_LIBS = $(PROJ_ROOT)/src/core/YieldCurve.a\
 		   $(PROJ_ROOT)/src/core/Tools.a\
-		   $(PROJ_ROOT)/src/core/Stock.a\
 		   $(LIB_PATH)/boost/libboost_regex.a\
 		   $(LIB_PATH)/boost/libboost_date_time.a
+		   #$(PROJ_ROOT)/src/core/Stock.a\
 
 .PHONY: all clean
 

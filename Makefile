@@ -23,20 +23,20 @@ all: source test
 source: os-depend-libs
 	$(MAKE) -C $(SOURCE_PATH)
 
-test: source os-depend-libs
+test: os-depend-libs
 	$(MAKE) -C $(TEST_PATH)
 
-run-test: test
+run-test: 
 	$(MAKE) -C $(TEST_PATH) run
 
 os-depend-libs:
 ifeq ($(OS), Darwin)
-	ln -sf $(LIB_PATH)/gtest/libgtest-apple.a $(LIB_PATH)/gtest/libgtest.a
+	ln -sf $(LIB_PATH)/gtest/libgtest_apple.a $(LIB_PATH)/gtest/libgtest.a
 	ln -sf $(LIB_PATH)/boost/libboost_date_time_apple.a $(LIB_PATH)/boost/libboost_date_time.a
 	ln -sf $(LIB_PATH)/boost/libboost_regex_apple.a $(LIB_PATH)/boost/libboost_regex.a
 endif
 ifeq ($(OS), Linux)
-	ln -sf $(LIB_PATH)/gtest/libgtest-linux.a $(LIB_PATH)/gtest/libgtest.a
+	ln -sf $(LIB_PATH)/gtest/libgtest_linux.a $(LIB_PATH)/gtest/libgtest.a
 	ln -sf $(LIB_PATH)/boost/libboost_date_time_linux.a $(LIB_PATH)/boost/libboost_date_time.a
 	ln -sf $(LIB_PATH)/boost/libboost_regex_linux.a $(LIB_PATH)/boost/libboost_regex.a
 endif

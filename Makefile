@@ -5,12 +5,13 @@ export LIB_PATH = $(CURDIR)/lib
 export BIN_PATH = $(CURDIR)/bin
 export DATA_PATH = $(CURDIR)/data
 
-export CXX = llvm-g++
-#export CXX = g++
+#export CXX = llvm-g++
+export CXX = g++
 
 #CFLAGS = -O0 -ggdb3
 CFLAGS  = -O2
-CFLAGS += -isystem/opt/local/include
+CFLAGS  += -I$(LIB_PATH)/boost/include 
+#CFLAGS += -isystem/opt/local/include
 export CFLAGS
 
 .PHONY: all test run-test clean\

@@ -113,7 +113,8 @@ main(int argc, char * argv[])
         while(finOptionDesc.good())
         {
             double strike, expireTradePrice, currTradePrice;
-            int rounds, steps, optIndex;
+            uint64_t rounds, steps;
+            int optIndex;
             std::string expireDateStr;
             char comma;
 
@@ -144,7 +145,7 @@ main(int argc, char * argv[])
             // Antithetice method
             double sumPayout1 = 0;
             double sumPayout2 = 0;
-            for(int i = 0; i < rounds; i ++)
+            for(uint64_t i = 0; i < rounds; i ++)
             {
                 std::vector<std::pair<Date, double> > futurePrices;
 
@@ -175,15 +176,19 @@ main(int argc, char * argv[])
 //                    << futurePrices[i].second << std::endl;
 //            }
 
-            std::cout << "Average pay out according to Method 1: " << sumPayout1 / (double)rounds << std::endl; 
-            std::cout << "Average pay out according to Method 2: " << sumPayout2 / (double)rounds << std::endl; 
+            std::cout.setf(std::ios::fixed);
+            std::cout << "Average pay out according to Method 1: " << 
+                std::setprecision(4) << sumPayout1 / (double)rounds << std::endl; 
+            std::cout << "Average pay out according to Method 2: " << 
+                std::setprecision(4) << sumPayout2 / (double)rounds << std::endl; 
             std::cout << std::endl;
+            std::cout.unsetf(std::ios::fixed);
 
             // Forecast the price using Monte-Carlo Method
             // Antithetice method
             sumPayout1 = 0;
             sumPayout2 = 0;
-            for(int i = 0; i < rounds; i ++)
+            for(uint64_t i = 0; i < rounds; i ++)
             {
                 std::vector<std::pair<Date, double> > futurePrices;
 
@@ -214,9 +219,13 @@ main(int argc, char * argv[])
 //                    << futurePrices[i].second << std::endl;
 //            }
 
-            std::cout << "Average pay out according to Method 1: " << sumPayout1 / (double)rounds << std::endl; 
-            std::cout << "Average pay out according to Method 2: " << sumPayout2 / (double)rounds << std::endl; 
+            std::cout.setf(std::ios::fixed);
+            std::cout << "Average pay out according to Method 1: " << 
+                std::setprecision(4) << sumPayout1 / (double)rounds << std::endl; 
+            std::cout << "Average pay out according to Method 2: " << 
+                std::setprecision(4) << sumPayout2 / (double)rounds << std::endl; 
             std::cout << std::endl;
+            std::cout.unsetf(std::ios::fixed);
         }
         finOptionDesc.close();
 

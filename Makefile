@@ -9,27 +9,38 @@ export CXX = llvm-g++
 #export CXX = g++
 
 #CFLAGS = -O0 -ggdb3
-CFLAGS  = -O2
+CFLAGS  = -O2 -m32
 CFLAGS += -isystem/opt/local/include
 export CFLAGS
 
+OS := $(shell uname)
+
 .PHONY: all test run-test clean\
-	run run-part1 run-part2
+	run run-part1 run-part2 os-depend-libs
 
 all: source test
 
-source:
+source: os-depend-libs
 	$(MAKE) -C $(SOURCE_PATH)
 
-test:
+test: source os-depend-libs
 	$(MAKE) -C $(TEST_PATH)
 
-run-test:
+run-test: test
 	$(MAKE) -C $(TEST_PATH) run
+
+os-depend-libs:
+ifeq ($(OS), Darwin)
+	ln -sf $(LIB_PATH)/gtest/libgtest-apple.a $(LIB_PATH)/gtest/libgtest.a
+endif
+ifeq ($(OS), Linux)
+	ln -sf $(LIB_PATH)/gtest/libgtest-linux.a $(LIB_PATH)/gtest/libgtest.a
+endif
 
 clean:
 	$(MAKE) -C $(SOURCE_PATH) clean
 	$(MAKE) -C $(TEST_PATH) clean
+	$(RM) $(LIB_PATH)/gtest/libgtest.a
 
 run: run-part1 run-part2
 

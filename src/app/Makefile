@@ -1,6 +1,3 @@
-CFLAGS += -I$(PROJ_ROOT)/include 
-#CFLAGS += -isystem/opt/local/include
-
 SOURCE_FILES = generateYieldCurve.cc optionMCSim.cc
 EXEC_FILES = $(patsubst %.cc, %, $(SOURCE_FILES))
 

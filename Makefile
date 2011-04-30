@@ -10,7 +10,7 @@ export CXX = g++
 
 #CFLAGS = -O0 -ggdb3
 CFLAGS  = -O2
-CFLAGS  += -I$(LIB_PATH)/boost/include 
+CFLAGS  += -I$(LIB_PATH)/boost/include -I$(PROJ_ROOT)/include
 export CFLAGS
 
 OS := $(shell uname)

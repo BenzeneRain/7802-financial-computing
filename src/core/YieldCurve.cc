@@ -323,8 +323,8 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
         {
             // If we cannot find compounding rate value in its input,
             // then use linear-interpolation to generate this value
-            std::pair<Date, double> startPoint(today + _instrDefs[prevInstrDefHasValue]->maturity(), instrVals->values[instrValIndicesMap[prevInstrDefHasValue]].second);
-            std::pair<Date, double> endPoint(today + _instrDefs[nextInstrDefHasValue]->maturity(), instrVals->values[instrValIndicesMap[nextInstrDefHasValue]].second);
+            std::pair<Date, double> startPoint(WorkDate(today + _instrDefs[prevInstrDefHasValue]->maturity()), instrVals->values[instrValIndicesMap[prevInstrDefHasValue]].second);
+            std::pair<Date, double> endPoint(WorkDate(today + _instrDefs[nextInstrDefHasValue]->maturity()), instrVals->values[instrValIndicesMap[nextInstrDefHasValue]].second);
             compRate = Interpolation::linearInterpolation(
                     startPoint, endPoint, maturityDate) / 100.0f;
         }
@@ -385,7 +385,7 @@ YieldCurveInstance* YieldCurveDefinition::bindData(
                     Duration maturityDuration(instrDef.maturity());
                     Duration deltaDuration(Duration(1, Duration::YEAR) / _compoundFreq);
 
-                    Date prevDate = WorkDate(today);
+                    Date prevDate = today;
                     double sumDeltaTxDf = 0.0; 
                     int n = floor(maturityDuration / deltaDuration);
                     for(int i = 1; i <= n; i ++)
@@ -532,7 +532,8 @@ double YieldCurveInstance::operator[](Date& date) const
     std::pair<std::vector<CurvePoint_t>::const_iterator,
         std::vector<CurvePoint_t>::const_iterator> iterRange;
 
-    CurvePoint_t fakePoint(date, 0, 0, InstrumentDefinition::FAKE);
+    Date workDate = WorkDate(date);
+    CurvePoint_t fakePoint(workDate, 0, 0, InstrumentDefinition::FAKE);
 
     iterRange = equal_range(_curveData.begin(),
             _curveData.end(), fakePoint);
@@ -553,6 +554,11 @@ double YieldCurveInstance::operator[](Date& date) const
         {
             iterRange.first --;
         }
+    else
+    {
+        if(iterRange.second == _curveData.end())
+            iterRange.second --;
+    }
 
     double value;
     CurvePoint_t lowerElement = *(iterRange.first);
@@ -561,49 +567,18 @@ double YieldCurveInstance::operator[](Date& date) const
     value = Interpolation::linearInterpolation(
             lowerElement.date, lowerElement.value,
             upperElement.date, upperElement.value,
-            date);
+            workDate);
 
     return value;
 }
 
 double YieldCurveInstance::getDf(Date& date) const
 {
-    std::pair<std::vector<CurvePoint_t>::const_iterator,
-        std::vector<CurvePoint_t>::const_iterator> iterRange;
-
-    CurvePoint_t fakePoint(date, 0, 0, InstrumentDefinition::FAKE);
-
-    iterRange = equal_range(_curveData.begin(),
-            _curveData.end(), fakePoint);
-     
-    int distUD = distance(iterRange.first, iterRange.second);
-    
-    if(distUD == 0)
-        if(iterRange.first == _curveData.end() || 
-                iterRange.first == _curveData.begin())
-        {
-            std::string errorMessage("Cannot get the value on the "
-                    "Yield Curve of the giving Date. The date is "
-                    "out of the range.");
-
-            throw YieldCurveException(errorMessage);
-        }
-        else
-        {
-            iterRange.first --;
-        }
-
-    double value;
-    CurvePoint_t lowerElement = *(iterRange.first);
-    CurvePoint_t upperElement = *(iterRange.second);
-
-    value = Interpolation::linearInterpolation(
-            lowerElement.date, lowerElement.value,
-            upperElement.date, upperElement.value,
-            date);
+    double value = this->operator[](date);
 
     Date today = WorkDate(Date::today());
-    double deltaT = normDiffDate(today, date, Date::ACT365);
+    Date workDate = WorkDate(date);
+    double deltaT = normDiffDate(today, workDate, Date::ACT365);
     value = _convertSpecificToDf(value, deltaT);
 
     return value;
@@ -660,28 +635,29 @@ double getCompoundRate(YieldCurveInstance& instYC, Date& theDate,
         InstrumentDefinition::TYPE type, double compoundFreq)
 {
     Date today = WorkDate(Date::today());
+    Date theWorkDate = WorkDate(theDate);
     try
     {
         switch(type)
         {
             case InstrumentDefinition::CASH:
                 {
-                    double deltaT = normDiffDate(today, theDate,
+                    double deltaT = normDiffDate(today, theWorkDate,
                             Date::ACT365);
 
                     double compRate = 
-                        (1.0f / instYC.getDf(theDate) - 1.0f) / 
+                        (1.0f / instYC.getDf(theWorkDate) - 1.0f) / 
                         deltaT;
 
                     return compRate * 100.0f;
                 }
             case InstrumentDefinition::FRA:
                 {
-                    Date startDate = WorkDate(theDate - Duration(3, Duration::MONTH));
+                    Date startDate = WorkDate(theWorkDate - Duration(3, Duration::MONTH));
                     double dfStart = instYC.getDf(startDate);
-                    double dfMature = instYC.getDf(theDate);
+                    double dfMature = instYC.getDf(theWorkDate);
                     
-                    double deltaT = normDiffDate(startDate, theDate,
+                    double deltaT = normDiffDate(startDate, theWorkDate,
                             Date::ACT365);
 
                     double compRate = (dfStart / dfMature - 1.0f) / deltaT;
@@ -689,7 +665,7 @@ double getCompoundRate(YieldCurveInstance& instYC, Date& theDate,
                 }
             case InstrumentDefinition::SWAP:
                 {
-                    Duration maturityDuration(theDate - today);
+                    Duration maturityDuration(theWorkDate - today);
                     Duration deltaDuration(Duration(1, Duration::YEAR) / compoundFreq);
 
                     int n = floor(maturityDuration / deltaDuration);

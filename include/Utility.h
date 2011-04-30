@@ -17,6 +17,9 @@ struct Interpolation
             const std::pair<Date, double>& p2,
             const Date& xVal)
     {
+        if(p1.first == p2.first)
+            return p1.second;
+
         Duration xToP1 = xVal - p1.first;
         Duration p2ToP1 = p2.first - p1.first;
 
@@ -30,6 +33,9 @@ struct Interpolation
             const Date& p2Date, double p2Val,
             const Date& xVal)
     {
+        if(p1Date == p2Date)
+            return p1Val;
+
         Duration xToP1 = xVal - p1Date;
         Duration p2ToP1 = p2Date - p1Date;
 
@@ -51,6 +57,9 @@ YAXIS Interpolation::linearInterpolation(
         const std::pair<XAXIS, YAXIS>& p2,
         const XAXIS& xVal)
 {
+    if(p1.first == p2.first)
+        return p1.second;
+
     return p1.second + YAXIS(
             ((p2.second - p1.second) / (YAXIS)(p2.first - p1.first)) * 
               (YAXIS)(xVal - p1.first));

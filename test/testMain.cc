@@ -1,6 +1,5 @@
 #include "gtest/gtest.h"
 
-
 //class CustomedTestEnvironment : public testing::Environment
 //{
 //    public:
@@ -17,7 +16,7 @@
 //        }
 //};
 
-int main(int argc, char * argv[])
+GTEST_API_ int main(int argc, char * argv[])
 {
     //testing::AddGlobalTestEnvironment(new CustomedTestEnvironment);
     testing::InitGoogleTest(&argc, argv);

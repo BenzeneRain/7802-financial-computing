@@ -4,6 +4,11 @@
 #include <vector>
 #include <ctime>
 
+#include <sys/times.h>
+#include <sys/resource.h>
+#include <sys/time.h>
+#include <unistd.h>
+
 #include "Instrument.h"
 #include "YieldCurve.h"
 #include "Utility.h"
@@ -69,9 +74,19 @@ main(int argc, char * argv[])
     std::string inCVDataFilename(argv[2]);
     std::string inOptionDescFilename(argv[3]);
 
+    // Variables for measuring the cpu time cost
+    struct rusage usage;
+    unsigned long t1, t2;
+
     try
     {
-        std::cout << "Parsing Yield Curve Definitions ..." << std::endl;
+        std::cout << "Parsing Yield Curve Definitions ...";
+        getrusage(RUSAGE_SELF, &usage);
+        t1 = (unsigned long long)usage.ru_utime.tv_sec * 1000000ULL +  // this is user time
+            (unsigned long long)usage.ru_utime.tv_usec;
+        t1 += (unsigned long long)usage.ru_stime.tv_sec * 1000000ULL + // this is system time
+            (unsigned long long)usage.ru_stime.tv_usec;
+        
         std::ifstream finCVDef(inCVDefFilename.c_str());
         std::string line;
         std::vector<InstrumentDefinition *> instrDefs;
@@ -90,7 +105,19 @@ main(int argc, char * argv[])
 
         YieldCurveDefinition ycDef(instrDefs, 4.0);
 
-        std::cout << "Binding Yield Curve Data to the definition ..." << std::endl;
+        getrusage(RUSAGE_SELF, &usage);
+        t2 = (unsigned long long)usage.ru_utime.tv_sec * 1000000ULL +  // this is user time
+            (unsigned long long)usage.ru_utime.tv_usec;
+        t2 += (unsigned long long)usage.ru_stime.tv_sec * 1000000ULL + // this is system time
+            (unsigned long long)usage.ru_stime.tv_usec;
+        std::cout << " Time used " << t2 - t1 << "us" << std::endl;
+
+        std::cout << "Binding Yield Curve Data to the definition ...";
+        getrusage(RUSAGE_SELF, &usage);
+        t1 = (unsigned long long)usage.ru_utime.tv_sec * 1000000ULL +  // this is user time
+            (unsigned long long)usage.ru_utime.tv_usec;
+        t1 += (unsigned long long)usage.ru_stime.tv_sec * 1000000ULL + // this is system time
+            (unsigned long long)usage.ru_stime.tv_usec;
         InstrumentValues values;
         std::ifstream finCVData(inCVDataFilename.c_str());
         getline(finCVData, line);
@@ -105,6 +132,13 @@ main(int argc, char * argv[])
         }
         finCVData.close();
         YieldCurveInstance *yci = ycDef.bindData(&values, YieldCurveDefinition::ZEROCOUPONRATE);
+
+        getrusage(RUSAGE_SELF, &usage);
+        t2 = (unsigned long long)usage.ru_utime.tv_sec * 1000000ULL +  // this is user time
+            (unsigned long long)usage.ru_utime.tv_usec;
+        t2 += (unsigned long long)usage.ru_stime.tv_sec * 1000000ULL + // this is system time
+            (unsigned long long)usage.ru_stime.tv_usec;
+        std::cout << " Time used " << t2 - t1 << "us" << std::endl;
 
         std::cout << "Reading and processing options ..." << std::endl;
         Date today = WorkDate(Date::today());
@@ -126,10 +160,17 @@ main(int argc, char * argv[])
                 break;
 
 
+            // Calculate Volatility
+            std::cout << "Calculating volatility ...";
+            getrusage(RUSAGE_SELF, &usage);
+            t1 = (unsigned long long)usage.ru_utime.tv_sec * 1000000ULL +  // this is user time
+                (unsigned long long)usage.ru_utime.tv_usec;
+            t1 += (unsigned long long)usage.ru_stime.tv_sec * 1000000ULL + // this is system time
+                (unsigned long long)usage.ru_stime.tv_usec;
+
             Date expireDateUnModified(expireDateStr);
             Date expireDate = WorkDate(expireDateUnModified);
 
-            // Calculate Volatility
             double deltaT = normDiffDate(today, expireDate, Date::ACT365); 
             double dfAtExpire = yci->getDf(expireDate);
             double crfRate = - log(dfAtExpire) / deltaT; // continuous time risk free rate
@@ -139,10 +180,23 @@ main(int argc, char * argv[])
             double volatility = Volatility::NewtonRaphsonMethod()(*formula, 1e-9);
 
             delete formula;
+            getrusage(RUSAGE_SELF, &usage);
+            t2 = (unsigned long long)usage.ru_utime.tv_sec * 1000000ULL +  // this is user time
+                (unsigned long long)usage.ru_utime.tv_usec;
+            t2 += (unsigned long long)usage.ru_stime.tv_sec * 1000000ULL + // this is system time
+                (unsigned long long)usage.ru_stime.tv_usec;
+            std::cout << " Time used " << t2 - t1 << "us" << std::endl;
 
-            Duration duration = expireDate - today;
+            
             // Forecast the price using Monte-Carlo Method
             // Antithetice method
+            std::cout << "Pricing the option using Monte-Carlo Simulation ...";
+            getrusage(RUSAGE_SELF, &usage);
+            t1 = (unsigned long long)usage.ru_utime.tv_sec * 1000000ULL +  // this is user time
+                (unsigned long long)usage.ru_utime.tv_usec;
+            t1 += (unsigned long long)usage.ru_stime.tv_sec * 1000000ULL + // this is system time
+                (unsigned long long)usage.ru_stime.tv_usec;
+            Duration duration = expireDate - today;
             double sumPayout1 = 0;
             double sumPayout2 = 0;
             for(uint64_t i = 0; i < rounds; i ++)
@@ -159,6 +213,12 @@ main(int argc, char * argv[])
                 sumPayout1 += payout1;
                 sumPayout2 += payout2;
             }
+            getrusage(RUSAGE_SELF, &usage);
+            t2 = (unsigned long long)usage.ru_utime.tv_sec * 1000000ULL +  // this is user time
+                (unsigned long long)usage.ru_utime.tv_usec;
+            t2 += (unsigned long long)usage.ru_stime.tv_sec * 1000000ULL + // this is system time
+                (unsigned long long)usage.ru_stime.tv_usec;
+            std::cout << " Time used " << t2 - t1 << "us" << std::endl;
 
             std::cout << "Using Antithetic Random Number Generator" << std::endl;
             std::cout << "Option "  << optIndex << std::endl;
@@ -185,47 +245,59 @@ main(int argc, char * argv[])
             std::cout.unsetf(std::ios::fixed);
 
             // Forecast the price using Monte-Carlo Method
-            // Antithetice method
-            sumPayout1 = 0;
-            sumPayout2 = 0;
-            for(uint64_t i = 0; i < rounds; i ++)
-            {
-                std::vector<std::pair<Date, double> > futurePrices;
-
-                futurePrices = MonteCarloSimulation<boxMullerM2RNG>(currTradePrice, today,
-                        duration, steps, *yci, volatility,
-                        boxMullerM2RNG(boxMullerM2RNG::NONANTITHETIC));
-
-
-                double payout1 = payOutFunc1(futurePrices);
-                double payout2 = payOutFunc2(futurePrices);
-                sumPayout1 += payout1;
-                sumPayout2 += payout2;
-            }
-
-            std::cout << "Using Non-Antithetic Random Number Generator" << std::endl;
-            std::cout << "Option "  << optIndex << std::endl;
-            std::cout << "Rounds: " << rounds << std::endl;
-            std::cout << "Steps: " << steps << std::endl;
-            std::cout << "Current Trading Price: " << currTradePrice << std::endl;
-            std::cout << "Strike: " << strike << std::endl;
-            std::cout << "Expire Date: " << expireDate.toString() << std::endl;
-            std::cout << "Expire Trading price: " << expireTradePrice << std::endl;
-            std::cout << "Volatility: " << volatility << std::endl;
-//            std::cout << "Price Predictions:" << std::endl; 
-//            for(int i = 0; i < (int) futurePrices.size(); i ++)
+            // NonAntithetice method
+//            std::cout << "Pricing the option using Monte-Carlo Simulation ...";
+//            getrusage(RUSAGE_SELF, &usage);
+//            t1 = (unsigned long long)usage.ru_utime.tv_sec * 1000000ULL +  // this is user time
+//                (unsigned long long)usage.ru_utime.tv_usec;
+//            t1 += (unsigned long long)usage.ru_stime.tv_sec * 1000000ULL + // this is system time
+//                (unsigned long long)usage.ru_stime.tv_usec;
+//            sumPayout1 = 0;
+//            sumPayout2 = 0;
+//            for(uint64_t i = 0; i < rounds; i ++)
 //            {
-//                std::cout << "\t" << futurePrices[i].first.toString() << "\t"
-//                    << futurePrices[i].second << std::endl;
+//                std::vector<std::pair<Date, double> > futurePrices;
+//
+//                futurePrices = MonteCarloSimulation<boxMullerM2RNG>(currTradePrice, today,
+//                        duration, steps, *yci, volatility,
+//                        boxMullerM2RNG(boxMullerM2RNG::NONANTITHETIC));
+//
+//
+//                double payout1 = payOutFunc1(futurePrices);
+//                double payout2 = payOutFunc2(futurePrices);
+//                sumPayout1 += payout1;
+//                sumPayout2 += payout2;
 //            }
-
-            std::cout.setf(std::ios::fixed);
-            std::cout << "Average pay out according to Method 1: " << 
-                std::setprecision(4) << sumPayout1 / (double)rounds << std::endl; 
-            std::cout << "Average pay out according to Method 2: " << 
-                std::setprecision(4) << sumPayout2 / (double)rounds << std::endl; 
-            std::cout << std::endl;
-            std::cout.unsetf(std::ios::fixed);
+//            getrusage(RUSAGE_SELF, &usage);
+//            t2 = (unsigned long long)usage.ru_utime.tv_sec * 1000000ULL +  // this is user time
+//                (unsigned long long)usage.ru_utime.tv_usec;
+//            t2 += (unsigned long long)usage.ru_stime.tv_sec * 1000000ULL + // this is system time
+//                (unsigned long long)usage.ru_stime.tv_usec;
+//            std::cout << " Time used " << t2 - t1 << "us" << std::endl;
+//
+//            std::cout << "Using Non-Antithetic Random Number Generator" << std::endl;
+//            std::cout << "Option "  << optIndex << std::endl;
+//            std::cout << "Rounds: " << rounds << std::endl;
+//            std::cout << "Steps: " << steps << std::endl;
+//            std::cout << "Current Trading Price: " << currTradePrice << std::endl;
+//            std::cout << "Strike: " << strike << std::endl;
+//            std::cout << "Expire Date: " << expireDate.toString() << std::endl;
+//            std::cout << "Expire Trading price: " << expireTradePrice << std::endl;
+//            std::cout << "Volatility: " << volatility << std::endl;
+////            std::cout << "Price Predictions:" << std::endl; 
+////            for(int i = 0; i < (int) futurePrices.size(); i ++)
+////            {
+////                std::cout << "\t" << futurePrices[i].first.toString() << "\t"
+////                    << futurePrices[i].second << std::endl;
+////            }
+//
+//            std::cout.setf(std::ios::fixed);
+//            std::cout << "Average pay out according to Method 1: " << 
+//                std::setprecision(4) << sumPayout1 / (double)rounds << std::endl; 
+//            std::cout << "Average pay out according to Method 2: " << 
+//                std::setprecision(4) << sumPayout2 / (double)rounds << std::endl; 
+//            std::cout << std::endl;
+//            std::cout.unsetf(std::ios::fixed);
         }
         finOptionDesc.close();
 

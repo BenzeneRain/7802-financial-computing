@@ -237,67 +237,67 @@ main(int argc, char * argv[])
 //            }
 
             std::cout.setf(std::ios::fixed);
-            std::cout << "Average pay out according to Method 1: " << 
+            std::cout << "Average pay out according to Method 1 (Option A): " << 
                 std::setprecision(4) << sumPayout1 / (double)rounds << std::endl; 
-            std::cout << "Average pay out according to Method 2: " << 
+            std::cout << "Average pay out according to Method 2 (Option B): " << 
                 std::setprecision(4) << sumPayout2 / (double)rounds << std::endl; 
             std::cout << std::endl;
             std::cout.unsetf(std::ios::fixed);
 
             // Forecast the price using Monte-Carlo Method
             // NonAntithetice method
-//            std::cout << "Pricing the option using Monte-Carlo Simulation ...";
-//            getrusage(RUSAGE_SELF, &usage);
-//            t1 = (unsigned long long)usage.ru_utime.tv_sec * 1000000ULL +  // this is user time
-//                (unsigned long long)usage.ru_utime.tv_usec;
-//            t1 += (unsigned long long)usage.ru_stime.tv_sec * 1000000ULL + // this is system time
-//                (unsigned long long)usage.ru_stime.tv_usec;
-//            sumPayout1 = 0;
-//            sumPayout2 = 0;
-//            for(uint64_t i = 0; i < rounds; i ++)
+            std::cout << "Pricing the option using Monte-Carlo Simulation ...";
+            getrusage(RUSAGE_SELF, &usage);
+            t1 = (unsigned long long)usage.ru_utime.tv_sec * 1000000ULL +  // this is user time
+                (unsigned long long)usage.ru_utime.tv_usec;
+            t1 += (unsigned long long)usage.ru_stime.tv_sec * 1000000ULL + // this is system time
+                (unsigned long long)usage.ru_stime.tv_usec;
+            sumPayout1 = 0;
+            sumPayout2 = 0;
+            for(uint64_t i = 0; i < rounds; i ++)
+            {
+                std::vector<std::pair<Date, double> > futurePrices;
+
+                futurePrices = MonteCarloSimulation<boxMullerM2RNG>(currTradePrice, today,
+                        duration, steps, *yci, volatility,
+                        boxMullerM2RNG(boxMullerM2RNG::NONANTITHETIC));
+
+
+                double payout1 = payOutFunc1(futurePrices);
+                double payout2 = payOutFunc2(futurePrices);
+                sumPayout1 += payout1;
+                sumPayout2 += payout2;
+            }
+            getrusage(RUSAGE_SELF, &usage);
+            t2 = (unsigned long long)usage.ru_utime.tv_sec * 1000000ULL +  // this is user time
+                (unsigned long long)usage.ru_utime.tv_usec;
+            t2 += (unsigned long long)usage.ru_stime.tv_sec * 1000000ULL + // this is system time
+                (unsigned long long)usage.ru_stime.tv_usec;
+            std::cout << " Time used " << t2 - t1 << "us" << std::endl;
+
+            std::cout << "Using Non-Antithetic Random Number Generator" << std::endl;
+            std::cout << "Option "  << optIndex << std::endl;
+            std::cout << "Rounds: " << rounds << std::endl;
+            std::cout << "Steps: " << steps << std::endl;
+            std::cout << "Current Trading Price: " << currTradePrice << std::endl;
+            std::cout << "Strike: " << strike << std::endl;
+            std::cout << "Expire Date: " << expireDate.toString() << std::endl;
+            std::cout << "Expire Trading price: " << expireTradePrice << std::endl;
+            std::cout << "Volatility: " << volatility << std::endl;
+//            std::cout << "Price Predictions:" << std::endl; 
+//            for(int i = 0; i < (int) futurePrices.size(); i ++)
 //            {
-//                std::vector<std::pair<Date, double> > futurePrices;
-//
-//                futurePrices = MonteCarloSimulation<boxMullerM2RNG>(currTradePrice, today,
-//                        duration, steps, *yci, volatility,
-//                        boxMullerM2RNG(boxMullerM2RNG::NONANTITHETIC));
-//
-//
-//                double payout1 = payOutFunc1(futurePrices);
-//                double payout2 = payOutFunc2(futurePrices);
-//                sumPayout1 += payout1;
-//                sumPayout2 += payout2;
+//                std::cout << "\t" << futurePrices[i].first.toString() << "\t"
+//                    << futurePrices[i].second << std::endl;
 //            }
-//            getrusage(RUSAGE_SELF, &usage);
-//            t2 = (unsigned long long)usage.ru_utime.tv_sec * 1000000ULL +  // this is user time
-//                (unsigned long long)usage.ru_utime.tv_usec;
-//            t2 += (unsigned long long)usage.ru_stime.tv_sec * 1000000ULL + // this is system time
-//                (unsigned long long)usage.ru_stime.tv_usec;
-//            std::cout << " Time used " << t2 - t1 << "us" << std::endl;
-//
-//            std::cout << "Using Non-Antithetic Random Number Generator" << std::endl;
-//            std::cout << "Option "  << optIndex << std::endl;
-//            std::cout << "Rounds: " << rounds << std::endl;
-//            std::cout << "Steps: " << steps << std::endl;
-//            std::cout << "Current Trading Price: " << currTradePrice << std::endl;
-//            std::cout << "Strike: " << strike << std::endl;
-//            std::cout << "Expire Date: " << expireDate.toString() << std::endl;
-//            std::cout << "Expire Trading price: " << expireTradePrice << std::endl;
-//            std::cout << "Volatility: " << volatility << std::endl;
-////            std::cout << "Price Predictions:" << std::endl; 
-////            for(int i = 0; i < (int) futurePrices.size(); i ++)
-////            {
-////                std::cout << "\t" << futurePrices[i].first.toString() << "\t"
-////                    << futurePrices[i].second << std::endl;
-////            }
-//
-//            std::cout.setf(std::ios::fixed);
-//            std::cout << "Average pay out according to Method 1: " << 
-//                std::setprecision(4) << sumPayout1 / (double)rounds << std::endl; 
-//            std::cout << "Average pay out according to Method 2: " << 
-//                std::setprecision(4) << sumPayout2 / (double)rounds << std::endl; 
-//            std::cout << std::endl;
-//            std::cout.unsetf(std::ios::fixed);
+
+            std::cout.setf(std::ios::fixed);
+            std::cout << "Average pay out according to Method 1 (Option A): " << 
+                std::setprecision(4) << sumPayout1 / (double)rounds << std::endl; 
+            std::cout << "Average pay out according to Method 2 (Option B): " << 
+                std::setprecision(4) << sumPayout2 / (double)rounds << std::endl; 
+            std::cout << std::endl;
+            std::cout.unsetf(std::ios::fixed);
         }
         finOptionDesc.close();
 

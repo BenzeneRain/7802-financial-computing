@@ -1,0 +1,12 @@
+Avg parsing yield curve definition time = 857.715 
+SDev parsing yield curve definition time = 97.7998291490409 
+Avg binding yield curve data = 436.963 
+SDev binding yield curve data = 55.7417866396276 
+avg calculating volatility time = 28.61 
+sdev calculating volatility time = 3.49716029517238 
+avg time for pricing the option = 12900235.175 
+sdev time for pricing the option = 40217.9417892081 
+avg payout 1 = 0.7258187 
+sdev payout 1 = 0.00335042768548669 
+Avg payout 2 = 163.5400413 
+SDev payout 2 = 0.305501758208653 

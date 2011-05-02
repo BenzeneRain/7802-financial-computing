@@ -228,7 +228,6 @@ main(int argc, char * argv[])
             std::cout << "Strike: " << strike << std::endl;
             std::cout << "Expire Date: " << expireDate.toString() << std::endl;
             std::cout << "Expire Trading price: " << expireTradePrice << std::endl;
-            std::cout << "Volatility: " << volatility << std::endl;
 //            std::cout << "Price Predictions:" << std::endl; 
 //            for(int i = 0; i < (int) futurePrices.size(); i ++)
 //            {
@@ -237,6 +236,10 @@ main(int argc, char * argv[])
 //            }
 
             std::cout.setf(std::ios::fixed);
+            std::cout << "Discount factor at expiration: " << 
+                std::setprecision(4) << dfAtExpire << std::endl;
+            std::cout << "Volatility: " << std::setprecision(4) << 
+                volatility << std::endl;
             std::cout << "Average pay out according to Method 1 (Option A): " << 
                 std::setprecision(4) << sumPayout1 / (double)rounds << std::endl; 
             std::cout << "Average pay out according to Method 2 (Option B): " << 
@@ -283,7 +286,6 @@ main(int argc, char * argv[])
             std::cout << "Strike: " << strike << std::endl;
             std::cout << "Expire Date: " << expireDate.toString() << std::endl;
             std::cout << "Expire Trading price: " << expireTradePrice << std::endl;
-            std::cout << "Volatility: " << volatility << std::endl;
 //            std::cout << "Price Predictions:" << std::endl; 
 //            for(int i = 0; i < (int) futurePrices.size(); i ++)
 //            {
@@ -292,6 +294,10 @@ main(int argc, char * argv[])
 //            }
 
             std::cout.setf(std::ios::fixed);
+            std::cout << "Discount factor at expiration: " << 
+                std::setprecision(4) << dfAtExpire << std::endl;
+            std::cout << "Volatility: " << std::setprecision(4) <<
+                volatility << std::endl;
             std::cout << "Average pay out according to Method 1 (Option A): " << 
                 std::setprecision(4) << sumPayout1 / (double)rounds << std::endl; 
             std::cout << "Average pay out according to Method 2 (Option B): " << 

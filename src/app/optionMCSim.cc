@@ -25,6 +25,16 @@ printUsage()
         "<input curve data csv filename> <input option description csv file>" << std::endl;
 }
 
+double payOutFuncBenchmark(std::vector<std::pair<Date, double> >& prices, double strike)
+{
+    double finalPrice = prices[prices.size() - 1].second;
+
+    if(finalPrice > strike)
+        return finalPrice - strike;
+    else
+        return 0;
+}
+
 double payOutFunc1(std::vector<std::pair<Date, double> >& prices)
 {
     double finalPrice = prices[prices.size() - 1].second;
@@ -186,6 +196,8 @@ main(int argc, char * argv[])
             t2 += (unsigned long long)usage.ru_stime.tv_sec * 1000000ULL + // this is system time
                 (unsigned long long)usage.ru_stime.tv_usec;
             std::cout << " Time used " << t2 - t1 << "us" << std::endl;
+            std::cout << "Volatility: " << std::setprecision(4) << 
+                volatility << std::endl;
 
             
             // Forecast the price using Monte-Carlo Method
@@ -199,6 +211,10 @@ main(int argc, char * argv[])
             Duration duration = expireDate - today;
             double sumPayout1 = 0;
             double sumPayout2 = 0;
+            double sumPayout3 = 0;
+
+            // Use this to copy one group of price prediction as output
+            std::vector<std::pair<Date, double> > tFuturePrices;
             for(uint64_t i = 0; i < rounds; i ++)
             {
                 std::vector<std::pair<Date, double> > futurePrices;
@@ -210,8 +226,13 @@ main(int argc, char * argv[])
 
                 double payout1 = payOutFunc1(futurePrices);
                 double payout2 = payOutFunc2(futurePrices);
+                double payout3 = payOutFuncBenchmark(futurePrices, strike);
                 sumPayout1 += payout1;
                 sumPayout2 += payout2;
+                sumPayout3 += payout3;
+
+                if(i == (rounds - 1))
+                    tFuturePrices = futurePrices;
             }
             getrusage(RUSAGE_SELF, &usage);
             t2 = (unsigned long long)usage.ru_utime.tv_sec * 1000000ULL +  // this is user time
@@ -228,18 +249,18 @@ main(int argc, char * argv[])
             std::cout << "Strike: " << strike << std::endl;
             std::cout << "Expire Date: " << expireDate.toString() << std::endl;
             std::cout << "Expire Trading price: " << expireTradePrice << std::endl;
-//            std::cout << "Price Predictions:" << std::endl; 
-//            for(int i = 0; i < (int) futurePrices.size(); i ++)
-//            {
-//                std::cout << "\t" << futurePrices[i].first.toString() << "\t"
-//                    << futurePrices[i].second << std::endl;
-//            }
-
+            std::cout << "One Group of Price Predictions:" << std::endl; 
             std::cout.setf(std::ios::fixed);
+            for(int i = 0; i < (int) tFuturePrices.size(); i ++)
+            {
+                std::cout << "\t" << tFuturePrices[i].first.toString() << "\t"
+                    << std::setprecision(4) << tFuturePrices[i].second << std::endl;
+            }
+
             std::cout << "Discount factor at expiration: " << 
                 std::setprecision(4) << dfAtExpire << std::endl;
-            std::cout << "Volatility: " << std::setprecision(4) << 
-                volatility << std::endl;
+            std::cout << "Average pay out of Benchmark Option: " << 
+                std::setprecision(4) << sumPayout3 / (double)rounds << std::endl; 
             std::cout << "Average pay out according to Method 1 (Option A): " << 
                 std::setprecision(4) << sumPayout1 / (double)rounds << std::endl; 
             std::cout << "Average pay out according to Method 2 (Option B): " << 
@@ -257,6 +278,7 @@ main(int argc, char * argv[])
                 (unsigned long long)usage.ru_stime.tv_usec;
             sumPayout1 = 0;
             sumPayout2 = 0;
+            sumPayout3 = 0;
             for(uint64_t i = 0; i < rounds; i ++)
             {
                 std::vector<std::pair<Date, double> > futurePrices;
@@ -268,8 +290,13 @@ main(int argc, char * argv[])
 
                 double payout1 = payOutFunc1(futurePrices);
                 double payout2 = payOutFunc2(futurePrices);
+                double payout3 = payOutFuncBenchmark(futurePrices, strike);
                 sumPayout1 += payout1;
                 sumPayout2 += payout2;
+                sumPayout3 += payout3;
+
+                if(i == (rounds - 1))
+                    tFuturePrices = futurePrices;
             }
             getrusage(RUSAGE_SELF, &usage);
             t2 = (unsigned long long)usage.ru_utime.tv_sec * 1000000ULL +  // this is user time
@@ -286,18 +313,18 @@ main(int argc, char * argv[])
             std::cout << "Strike: " << strike << std::endl;
             std::cout << "Expire Date: " << expireDate.toString() << std::endl;
             std::cout << "Expire Trading price: " << expireTradePrice << std::endl;
-//            std::cout << "Price Predictions:" << std::endl; 
-//            for(int i = 0; i < (int) futurePrices.size(); i ++)
-//            {
-//                std::cout << "\t" << futurePrices[i].first.toString() << "\t"
-//                    << futurePrices[i].second << std::endl;
-//            }
-
+            std::cout << "One Group of Price Predictions:" << std::endl; 
             std::cout.setf(std::ios::fixed);
+            for(int i = 0; i < (int) tFuturePrices.size(); i ++)
+            {
+                std::cout << "\t" << tFuturePrices[i].first.toString() << "\t"
+                    << std::setprecision(4) << tFuturePrices[i].second << std::endl;
+            }
+
             std::cout << "Discount factor at expiration: " << 
                 std::setprecision(4) << dfAtExpire << std::endl;
-            std::cout << "Volatility: " << std::setprecision(4) <<
-                volatility << std::endl;
+            std::cout << "Average pay out of Benchmark Option: " << 
+                std::setprecision(4) << sumPayout3 / (double)rounds << std::endl; 
             std::cout << "Average pay out according to Method 1 (Option A): " << 
                 std::setprecision(4) << sumPayout1 / (double)rounds << std::endl; 
             std::cout << "Average pay out according to Method 2 (Option B): " << 

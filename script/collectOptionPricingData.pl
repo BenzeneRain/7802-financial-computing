@@ -11,7 +11,7 @@ system("rm -f pricingTime.dat");
 system("rm -f payout1.dat");
 system("rm -f payout2.dat");
 
-$round = 1000;
+$round = 100;
 
 @parsingYCDefTime=();
 @bindingYCDefTime=();
@@ -19,6 +19,7 @@ $round = 1000;
 @pricingTime=();
 @payout1=();
 @payout2=();
+@payoutBM=();
 
 $progress = 0;
 $step = $round * 0.1;
@@ -74,6 +75,16 @@ for ($i = 0; $i < $round; $i ++)
             @retu[$j] =~ /(\d+(\.\d+)?)us/;
             $match=$1;
             push(@pricingTime, $match);
+            $j ++;
+            next;
+        }
+
+        if(@retu[$j] =~ /Average pay out of Benchmark Option/)
+        {
+            #print ("@retu[$j]\n");
+            @retu[$j] =~ /\d+(\.\d+)?$/;
+            $match=$&;
+            push(@payoutBM, $match);
             $j ++;
             next;
         }
@@ -138,6 +149,14 @@ $sdevpricingTime = 0;
 $sdevpricingTime += ($_ - $avgpricingTime) * ($_ - $avgpricingTime) for @pricingTime;
 $sdevpricingTime = sqrt($sdevpricingTime / ($round - 1));
 
+$sumpayoutBM = 0;
+$sumpayoutBM += $_ for @payoutBM;
+$avgpayoutBM = $sumpayoutBM / $round;
+
+$sdevpayoutBM = 0;
+$sdevpayoutBM += ($_ - $avgpayoutBM) * ($_ - $avgpayoutBM) for @payoutBM;
+$sdevpayoutBM = sqrt($sdevpayoutBM / ($round - 1));
+
 $sumpayout1 = 0;
 $sumpayout1 += $_ for @payout1;
 $avgpayout1 = $sumpayout1 / $round;
@@ -165,6 +184,9 @@ print ("sdev calculating volatility time = $sdevcalcVolTime \n");
 
 print ("avg time for pricing the option = $avgpricingTime \n");
 print ("sdev time for pricing the option = $sdevpricingTime \n");
+
+print ("avg payout Benchmark Option = $avgpayoutBM \n");
+print ("sdev payout Benchmark Option = $sdevpayoutBM \n");
 
 print ("avg payout 1 = $avgpayout1 \n");
 print ("sdev payout 1 = $sdevpayout1 \n");

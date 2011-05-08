@@ -55,10 +55,11 @@ MonteCarloSimulation(double startPrice, Date& startDate,
     predictions[0] = std::pair<Date, double>(startDate, startPrice);
 
     double currPrice = startPrice;
+    Date lastDate = startDate;
     for(int i = 1; i <= numSteps; i ++)
     {
         Date futureDate = WorkDate(startDate + deltaDuration * i);
-        double deltaT = normDiffDate(startDate, futureDate, 
+        double deltaT = normDiffDate(lastDate, futureDate, 
                 Date::ACT365);
         double deltaTForR = normDiffDate(curveStartDate, futureDate,
                 Date::ACT365);
@@ -74,6 +75,7 @@ MonteCarloSimulation(double startPrice, Date& startDate,
                 futureDate, futurePrice);
 
         currPrice = futurePrice;
+        lastDate = futureDate;
     }
 
     return predictions;

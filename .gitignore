@@ -15,3 +15,5 @@ tags
 /c7802.xcodeproj/**/*
 /ProjectModel.xcdatamodeld/
 /ProjectModel.xcdatamodeld/**/*
+/report/
+/report/**/*
